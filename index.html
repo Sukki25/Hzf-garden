@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Garden Curation - Baramulla</title>
+    <!-- Vue 3 for Reactivity -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f5; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        .carousel-img { object-fit: cover; height: 240px; width: 100%; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b5c49; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-[#3b5c49] text-white py-10 shadow-md">
+            <div class="container mx-auto px-6 text-center">
+                <h1 class="text-4xl font-bold mb-3 tracking-wide text-[#e2ede6]">Interactive Garden Portfolio</h1>
+                <p class="text-lg text-[#cddbcc]">Baramulla Landscape Design & Plant Directory</p>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8">
+            <!-- Controls: Search & Tabs -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <!-- Tabs -->
+                <div class="flex bg-white rounded-lg shadow-sm overflow-hidden p-1">
+                    <button @click="activeTab = 'section_1'" 
+                            :class="['px-6 py-2.5 font-medium rounded-md transition-colors', activeTab === 'section_1' ? 'bg-[#3b5c49] text-white' : 'text-gray-600 hover:bg-gray-100']">
+                        <i class="fas fa-layer-group mr-2"></i> Elevated Wall Pockets
+                    </button>
+                    <button @click="activeTab = 'section_2'" 
+                            :class="['px-6 py-2.5 font-medium rounded-md transition-colors', activeTab === 'section_2' ? 'bg-[#3b5c49] text-white' : 'text-gray-600 hover:bg-gray-100']">
+                        <i class="fas fa-seedling mr-2"></i> Slope Flower Bed
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="relative w-full md:w-1/3">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" v-model="searchQuery" placeholder="Search plants by name or features..." 
+                           class="w-full py-2.5 pl-10 pr-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3b5c49] focus:border-transparent">
+                </div>
+            </div>
+
+            <!-- Tab Objective Descriptions -->
+            <div class="bg-white p-6 rounded-lg shadow-sm mb-8 border-l-4 border-[#c1a87c]">
+                <h3 class="text-xl font-bold text-[#3b5c49] mb-2">{{ activeTab === 'section_1' ? 'Section 1: Elevated Wall Pockets' : 'Section 2: Flat / Slight Slope Flower Bed' }}</h3>
+                <p class="text-gray-700 italic">
+                    {{ activeTab === 'section_1' 
+                        ? 'Mid-to-large architectural plants utilizing vertical space against the wall. Focus on voluminous foliage, extended bloom cycles, and structural presence.' 
+                        : 'Low-growing, creeping, and spreading plants to create a continuous dense carpet of color that cascades over the stone border.' }}
+                </p>
+            </div>
+
+            <!-- Plant Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+                <transition-group name="fade">
+                    <div v-for="plant in filteredPlants" :key="plant.name" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100 flex flex-col">
+                        
+                        <!-- Image Carousel Area -->
+                        <div class="relative bg-gray-200 h-[240px]">
+                            <!-- Loading State -->
+                            <div v-if="plant.loadingImages" class="absolute inset-0 flex items-center justify-center bg-gray-100">
+                                <div class="loader"></div>
+                            </div>
+                            
+                            <!-- Images -->
+                            <img v-if="plant.images && plant.images.length > 0" 
+                                 :src="plant.images[plant.currentImageIndex]" 
+                                 class="carousel-img w-full h-full" 
+                                 alt="Plant image"
+                                 @error="handleImageError(plant)">
+                                 
+                            <!-- Carousel Controls -->
+                            <div v-if="plant.images && plant.images.length > 1" class="absolute inset-0 flex items-center justify-between px-2 opacity-0 hover:opacity-100 transition-opacity">
+                                <button @click="prevImage(plant)" class="bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/70"><i class="fas fa-chevron-left"></i></button>
+                                <button @click="nextImage(plant)" class="bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/70"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            
+                            <!-- Image Dots -->
+                            <div v-if="plant.images && plant.images.length > 1" class="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+                                <span v-for="(img, idx) in plant.images" :key="idx" 
+                                      :class="['block w-2 h-2 rounded-full', plant.currentImageIndex === idx ? 'bg-white' : 'bg-white/50']"></span>
+                            </div>
+                        </div>
+
+                        <!-- Plant Details -->
+                        <div class="p-5 flex-1 flex flex-col">
+                            <h3 class="text-xl font-bold text-[#2c3e34] leading-tight mb-1">{{ plant.name }}</h3>
+                            <span class="text-sm font-medium text-[#557563] italic mb-4 block">{{ plant.botanical }}</span>
+                            
+                            <div class="space-y-2.5 text-sm flex-1">
+                                <div class="flex items-start">
+                                    <i class="fas fa-ruler-combined mt-1 w-5 text-[#88a392]"></i>
+                                    <div><span class="font-semibold text-gray-700">Size:</span> <span class="text-gray-600">{{ plant.size }}</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-cloud-sun mt-1 w-5 text-[#88a392]"></i>
+                                    <div><span class="font-semibold text-gray-700">Weather:</span> <span class="text-gray-600">{{ plant.weather }}</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-tint mt-1 w-5 text-[#88a392]"></i>
+                                    <div><span class="font-semibold text-gray-700">Water:</span> <span class="text-gray-600">{{ plant.water }}</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-leaf mt-1 w-5 text-[#88a392]"></i>
+                                    <div><span class="font-semibold text-gray-700">Soil:</span> <span class="text-gray-600">{{ plant.soil }}</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-calendar-alt mt-1 w-5 text-[#88a392]"></i>
+                                    <div><span class="font-semibold text-gray-700">Bloom:</span> <span class="text-gray-600">{{ plant.bloom }}</span></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-100 text-sm">
+                                <span class="font-semibold text-[#3b5c49]"><i class="fas fa-star text-yellow-500 mr-1"></i> Feature:</span> 
+                                <span class="text-gray-600">{{ plant.features }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </transition-group>
+            </div>
+            
+            <div v-if="filteredPlants.length === 0" class="text-center py-12 text-gray-500">
+                <i class="fas fa-search fa-3x mb-4 opacity-30"></i>
+                <p class="text-xl">No plants found matching your search.</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    plants: [{"section": "section_1", "name": "Hosta (Plantain Lilies)", "botanical": "Hosta", "size": "1-3 ft tall, 2-4 ft spread", "weather": "Extremely cold-hardy. Needs morning sun/afternoon shade.", "water": "Moderate to high; keep soil consistently moist.", "soil": "Rich, organic, well-draining loam.", "bloom": "Mid-summer (lavender/white spikes).", "features": "Massive, fancy, variegated leaves for architectural structure."}, {"section": "section_1", "name": "Peony", "botanical": "Paeonia", "size": "2-3 ft tall and wide", "weather": "Perfect for Baramulla. Requires prolonged winter chill.", "water": "Moderate (deep watering once a week).", "soil": "Highly fertile, well-draining soil.", "bloom": "Late spring to early summer.", "features": "Massive, fragrant blooms; deep green foliage."}, {"section": "section_1", "name": "Bigleaf Hydrangea", "botanical": "Hydrangea macrophylla", "size": "3-5 ft tall and wide", "weather": "Cold-hardy. Benefits from wall shelter.", "water": "High; do not let the soil dry out.", "soil": "Rich, moist soil. Acidic = blue, Alkaline = pink.", "bloom": "Summer to early autumn.", "features": "Large, showy flower heads and dense leafy volume."}, {"section": "section_1", "name": "Climbing Rose", "botanical": "Rosa", "size": "6-10 ft tall (climbing)", "weather": "Very hardy; thrives in Kashmir\u2019s summers.", "water": "Moderate.", "soil": "Loamy, well-fed soil.", "bloom": "Summer.", "features": "Can be trained up the wall for vertical interest."}, {"section": "section_1", "name": "Bearded Iris", "botanical": "Iris germanica", "size": "2-3 ft tall", "weather": "Frost-hardy. Loves full sun.", "water": "Low to moderate.", "soil": "Well-draining. Tops of rhizomes must be exposed.", "bloom": "Spring to early summer.", "features": "Sword-like, 'fancy' foliage."}, {"section": "section_1", "name": "Dahlia (Dinnerplate)", "botanical": "Dahlia pinnata", "size": "3-5 ft tall", "weather": "Thrives in warm summer. Tubers must be dug up in winter.", "water": "Moderate to high.", "soil": "Rich, well-draining soil.", "bloom": "Mid-summer to autumn.", "features": "Enormous, vibrant flowers."}, {"section": "section_1", "name": "Japanese Anemone", "botanical": "Eriocapitella hupehensis", "size": "2-4 ft tall", "weather": "Cold-hardy and robust.", "water": "Moderate to high.", "soil": "Rich, moist, well-draining soil.", "bloom": "Late summer to fall.", "features": "Delicate flowers on tall stems."}, {"section": "section_1", "name": "Coneflower", "botanical": "Echinacea purpurea", "size": "2-3 ft tall", "weather": "Extremely frost and drought-resistant.", "water": "Low.", "soil": "Poor to average soil.", "bloom": "Summer.", "features": "Daisy-like blooms with prominent central cones."}, {"section": "section_1", "name": "Daylily", "botanical": "Hemerocallis", "size": "2-3 ft tall", "weather": "Tough perennial that handles freezing winters.", "water": "Moderate.", "soil": "Adaptable to almost any soil type.", "bloom": "Summer.", "features": "Lush, arching grass-like foliage."}, {"section": "section_1", "name": "Delphinium", "botanical": "Delphinium elatum", "size": "4-6 ft tall", "weather": "Loves cool summers and cold winters.", "water": "Moderate to high.", "soil": "Rich, alkaline, well-drained soil.", "bloom": "Early to mid-summer.", "features": "Majestic, tall vertical spikes of blue flowers."}, {"section": "section_1", "name": "Foxglove", "botanical": "Digitalis purpurea", "size": "3-5 ft tall", "weather": "Biennial that self-seeds freely.", "water": "Moderate.", "soil": "Humus-rich, slightly acidic soil.", "bloom": "Early summer.", "features": "Tall spires of tubular, speckled bell-shaped flowers."}, {"section": "section_1", "name": "Astilbe", "botanical": "Astilbe chinensis", "size": "1.5-3 ft tall", "weather": "Perfect for shaded, damp areas.", "water": "High; requires constant moisture.", "soil": "Rich, moisture-retentive soil.", "bloom": "Mid-summer.", "features": "Feathery foliage with striking, fluffy flower plumes."}, {"section": "section_1", "name": "Bleeding Heart", "botanical": "Lamprocapnos spectabilis", "size": "2-3 ft tall", "weather": "Thrives in cool, shaded environments.", "water": "Moderate.", "soil": "Rich, woodland soil.", "bloom": "Late spring to early summer.", "features": "Heart-shaped pink/white flowers dangling from arching stems."}, {"section": "section_1", "name": "Lupine", "botanical": "Lupinus", "size": "3-4 ft tall", "weather": "Excels in cool, mountain climates.", "water": "Moderate.", "soil": "Slightly acidic, well-draining sandy soil.", "bloom": "Late spring to early summer.", "features": "Dense, architectural flower spikes."}, {"section": "section_1", "name": "Kashmir Mallow", "botanical": "Lavatera kashmiriana", "size": "4-6 ft tall", "weather": "Native to the region; perfectly adapted.", "water": "Moderate.", "soil": "Highly adaptable.", "bloom": "Summer through autumn.", "features": "Large, clear pink flowers. Excellent backdrop."}, {"section": "section_2", "name": "Tulips", "botanical": "Tulipa", "size": "1-2 ft tall", "weather": "Needs freezing winter temperatures to bloom.", "water": "Moderate in spring; dry in summer.", "soil": "Sandy, well-draining soil.", "bloom": "Early to mid-spring.", "features": "Iconic cup-shaped flowers."}, {"section": "section_2", "name": "Saffron Crocus", "botanical": "Crocus sativus", "size": "4-6 inches tall", "weather": "Requires well-defined seasons and cold winters.", "water": "Low to moderate.", "soil": "Very well-draining, slightly sandy soil.", "bloom": "Autumn.", "features": "Stunning purple blooms; yields saffron."}, {"section": "section_2", "name": "Creeping Phlox", "botanical": "Phlox subulata", "size": "4-6 inches tall", "weather": "Extremely cold-hardy. Excellent for slopes.", "water": "Medium.", "soil": "Well-draining, slightly alkaline soil.", "bloom": "Spring.", "features": "Carpet of star-shaped pink, purple, or white flowers."}, {"section": "section_2", "name": "English Lavender", "botanical": "Lavandula angustifolia", "size": "1-2 ft tall", "weather": "Needs full sun. Very cold-hardy.", "water": "Low (let dry between waterings).", "soil": "Poor, rocky, or sandy soil.", "bloom": "Summer.", "features": "Silvery foliage year-round and fragrant purple spikes."}, {"section": "section_2", "name": "Coral Bells", "botanical": "Heuchera", "size": "1-1.5 ft tall", "weather": "Frost-hardy. Prefers partial shade.", "water": "Moderate.", "soil": "Rich, moist, well-draining soil.", "bloom": "Summer.", "features": "Highly colorful, ruffled leaves."}, {"section": "section_2", "name": "Catmint", "botanical": "Nepeta", "size": "1-2 ft tall, sprawling", "weather": "Very hardy and robust.", "water": "Low.", "soil": "Average, well-draining soil.", "bloom": "Spring through summer.", "features": "Produces clouds of small purple/blue flowers."}, {"section": "section_2", "name": "Daffodils", "botanical": "Narcissus", "size": "1-1.5 ft tall", "weather": "Needs cold winters. Naturalizes beautifully.", "water": "Moderate in spring.", "soil": "Well-draining soil.", "bloom": "Late winter to early spring.", "features": "Cheerful yellow/white blooms; deer resistant."}, {"section": "section_2", "name": "Cranesbill", "botanical": "Geranium", "size": "1-1.5 ft tall", "weather": "Extremely hardy to cold.", "water": "Moderate.", "soil": "Adaptable to most soils.", "bloom": "Spring through summer.", "features": "Dainty flowers that spread nicely on a slight slope."}, {"section": "section_2", "name": "Ranunculus", "botanical": "Ranunculus asiaticus", "size": "1-1.5 ft tall", "weather": "Thrives in cool spring weather.", "water": "Moderate.", "soil": "Light, well-draining soil.", "bloom": "Spring.", "features": "Exquisite, multi-layered, rose-like blooms."}, {"section": "section_2", "name": "Lungwort", "botanical": "Pulmonaria", "size": "8-12 inches tall", "weather": "Cold-hardy. Great for shaded sections.", "water": "High.", "soil": "Humus-rich, moist soil.", "bloom": "Early spring.", "features": "Silver-spotted fancy leaves; pink flowers age to blue."}, {"section": "section_2", "name": "Snowdrops", "botanical": "Galanthus nivalis", "size": "4-6 inches tall", "weather": "Extremely hardy; blooms in snow.", "water": "Moderate.", "soil": "Rich, moist, well-drained soil.", "bloom": "Late winter to early spring.", "features": "Delicate, nodding white bell-shaped flowers."}, {"section": "section_2", "name": "Grape Hyacinth", "botanical": "Muscari", "size": "6-8 inches tall", "weather": "Vigorous and hardy in cold climates.", "water": "Moderate.", "soil": "Well-draining soil.", "bloom": "Mid-spring.", "features": "Dense, grape-like clusters of vivid blue flowers."}, {"section": "section_2", "name": "Lily of the Valley", "botanical": "Convallaria majalis", "size": "6-10 inches tall", "weather": "Loves cool, shaded environment. Spreads via rhizomes.", "water": "Moderate to high.", "soil": "Moist, humus-rich soil.", "bloom": "Mid-spring.", "features": "Intensely fragrant, tiny white bell flowers."}, {"section": "section_2", "name": "Forget-Me-Not", "botanical": "Myosotis sylvatica", "size": "6-12 inches tall", "weather": "Thrives in cool, damp conditions.", "water": "High; keep soil moist.", "soil": "Rich, moist soil.", "bloom": "Spring to early summer.", "features": "Sprays of tiny, bright blue flowers."}, {"section": "section_2", "name": "Sweet Alyssum", "botanical": "Lobularia maritima", "size": "4-6 inches tall", "weather": "Tolerates light frost.", "water": "Moderate.", "soil": "Average, well-drained soil.", "bloom": "Spring through autumn.", "features": "Low-growing carpet of tiny, honey-scented flowers."}],
+                    activeTab: 'section_1',
+                    searchQuery: ''
+                }
+            },
+            computed: {
+                filteredPlants() {
+                    return this.plants.filter(p => {
+                        const matchesTab = p.section === this.activeTab;
+                        const searchLower = this.searchQuery.toLowerCase();
+                        const matchesSearch = p.name.toLowerCase().includes(searchLower) || 
+                                              p.botanical.toLowerCase().includes(searchLower) ||
+                                              p.features.toLowerCase().includes(searchLower);
+                        return matchesTab && matchesSearch;
+                    });
+                }
+            },
+            mounted() {
+                // Initialize reactivity state for images
+                this.plants.forEach(plant => {
+                    plant.images = [];
+                    plant.currentImageIndex = 0;
+                    plant.loadingImages = true;
+                });
+                
+                // Fetch real images from Wikipedia API directly from the client browser
+                this.fetchAllImages();
+            },
+            methods: {
+                async fetchAllImages() {
+                    // Fetch in parallel chunks to not overwhelm the browser, though Wikipedia API is generous
+                    for (let plant of this.plants) {
+                        this.fetchImagesForPlant(plant);
+                    }
+                },
+                async fetchImagesForPlant(plant) {
+                    try {
+                        // Use Wikipedia Action API to get images from the page of the botanical name
+                        const title = encodeURIComponent(plant.botanical);
+                        const url = `https://en.wikipedia.org/w/api.php?action=query&generator=images&titles=${title}&gimlimit=5&prop=imageinfo&iiprop=url&format=json&origin=*`;
+                        
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        
+                        if (data.query && data.query.pages) {
+                            const pages = Object.values(data.query.pages);
+                            
+                            // Filter valid images (ignore SVGs, tiny icons, logos)
+                            let validUrls = pages
+                                .filter(p => p.imageinfo && p.imageinfo[0].url)
+                                .map(p => p.imageinfo[0].url)
+                                .filter(url => {
+                                    const lower = url.toLowerCase();
+                                    return (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png')) 
+                                           && !lower.includes('icon') 
+                                           && !lower.includes('logo')
+                                           && !lower.includes('map');
+                                });
+
+                            if (validUrls.length > 0) {
+                                // Store up to 3 high quality images
+                                plant.images = validUrls.slice(0, 3);
+                            } else {
+                                this.setFallbackImage(plant);
+                            }
+                        } else {
+                            this.setFallbackImage(plant);
+                        }
+                    } catch (e) {
+                        console.error('Error fetching image for', plant.name, e);
+                        this.setFallbackImage(plant);
+                    } finally {
+                        plant.loadingImages = false;
+                    }
+                },
+                setFallbackImage(plant) {
+                    // Fallback to a nice botanical placeholder if wiki fails
+                    plant.images = [
+                        `https://placehold.co/600x400/4a6b57/ffffff?text=${encodeURIComponent(plant.name)}`
+                    ];
+                },
+                handleImageError(plant) {
+                    // If a loaded image link breaks, remove it and fallback
+                    plant.images.splice(plant.currentImageIndex, 1);
+                    if (plant.images.length === 0) {
+                        this.setFallbackImage(plant);
+                    } else if (plant.currentImageIndex >= plant.images.length) {
+                        plant.currentImageIndex = 0;
+                    }
+                },
+                nextImage(plant) {
+                    if (plant.images.length > 0) {
+                        plant.currentImageIndex = (plant.currentImageIndex + 1) % plant.images.length;
+                    }
+                },
+                prevImage(plant) {
+                    if (plant.images.length > 0) {
+                        plant.currentImageIndex = (plant.currentImageIndex - 1 + plant.images.length) % plant.images.length;
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
