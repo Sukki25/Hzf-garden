@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baramulla Garden Curation</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f4f7f5; }
+        [v-cloak] { display: none; }
+        .plant-img { object-fit: cover; width: 100%; height: 250px; }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div id="app" v-cloak class="min-h-screen pb-16">
+        
+        <!-- Header -->
+        <header class="bg-[#2c4a3b] text-white py-10 shadow-md border-b-4 border-[#c1a87c]">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl font-bold mb-2">Baramulla Landscape Directory</h1>
+                <p class="text-lg text-gray-300">Interactive Plant & Detail Guide</p>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 mt-8">
+            <!-- Navigation Tabs -->
+            <div class="flex flex-col md:flex-row gap-4 mb-8 justify-center">
+                <button @click="activeTab = 'section_1'" 
+                        :class="['px-8 py-4 font-bold rounded shadow transition-all', activeTab === 'section_1' ? 'bg-[#3b5c49] text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
+                    Section 1: Elevated Wall Pockets
+                </button>
+                <button @click="activeTab = 'section_2'" 
+                        :class="['px-8 py-4 font-bold rounded shadow transition-all', activeTab === 'section_2' ? 'bg-[#3b5c49] text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
+                    Section 2: Sloped Flower Bed
+                </button>
+            </div>
+
+            <!-- Plant Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div v-for="plant in filteredPlants" :key="plant.name" class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
+                    
+                    <!-- Image Container -->
+                    <div class="relative bg-gray-100 h-[250px] w-full border-b border-gray-200">
+                        <div v-if="plant.loading" class="absolute inset-0 flex items-center justify-center text-gray-400 font-bold">
+                            Loading Image...
+                        </div>
+                        <img v-else :src="plant.image" :alt="plant.name" class="plant-img">
+                    </div>
+
+                    <!-- Text & Details Container (Always Visible) -->
+                    <div class="p-6 flex-1 flex flex-col">
+                        <h2 class="text-2xl font-extrabold text-gray-900 mb-1">{{ plant.name }}</h2>
+                        <h3 class="text-md font-semibold text-[#4a7c59] italic mb-4 border-b pb-2">{{ plant.botanical }}</h3>
+                        
+                        <div class="space-y-3 text-sm text-gray-700 flex-1">
+                            <p><strong class="text-gray-900 uppercase text-xs tracking-wider">Size:</strong> <br> {{ plant.size }}</p>
+                            <p><strong class="text-gray-900 uppercase text-xs tracking-wider">Water Needs:</strong> <br> {{ plant.water }}</p>
+                            <p><strong class="text-gray-900 uppercase text-xs tracking-wider">Bloom Season:</strong> <br> {{ plant.bloom }}</p>
+                            <p class="bg-gray-50 p-3 rounded border border-gray-100 mt-2">
+                                <strong class="text-gray-900 uppercase text-xs tracking-wider">Details:</strong> <br> {{ plant.desc }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const plantsData = [
+            // SECTION 1
+            { section: "section_1", name: "Hydrangea", botanical: "Hydrangea macrophylla", size: "3-5 ft tall/wide", water: "High, consistent moisture", bloom: "Summer to early fall", desc: "Large mophead flowers. Soil pH changes colors." },
+            { section: "section_1", name: "English Shrub Rose", botanical: "Rosa", size: "3-6 ft tall/wide", water: "Deep, regular watering", bloom: "Summer/Fall", desc: "Highly fragrant, repeat-blooming focal points." },
+            { section: "section_1", name: "Delphinium", botanical: "Delphinium elatum", size: "4-6 ft tall", water: "Moderate to high", bloom: "Early to mid-summer", desc: "Majestic spikes of vivid blue and purple." },
+            { section: "section_1", name: "Hollyhock", botanical: "Alcea rosea", size: "5-8 ft tall", water: "Moderate", bloom: "Mid-summer to fall", desc: "Towering cottage garden classics." },
+            { section: "section_1", name: "Daylily", botanical: "Hemerocallis", size: "2-3 ft tall", water: "Moderate", bloom: "Summer", desc: "Indestructible perennials with arching foliage." },
+            { section: "section_1", name: "Coneflower", botanical: "Echinacea purpurea", size: "2-4 ft tall", water: "Low, drought-tolerant", bloom: "Summer to fall", desc: "Daisy-like blooms with prominent central cones." },
+            { section: "section_1", name: "Lilac", botanical: "Syringa vulgaris", size: "8-15 ft tall", water: "Moderate", bloom: "Spring", desc: "Intensely fragrant purple/white clusters." },
+            { section: "section_1", name: "Weigela", botanical: "Weigela florida", size: "4-6 ft tall", water: "Moderate", bloom: "Late spring", desc: "Dark foliage with pink trumpet flowers." },
+            { section: "section_1", name: "Astilbe", botanical: "Astilbe", size: "2-3 ft tall", water: "High, keep moist", bloom: "Mid-summer", desc: "Fluffy flower plumes for shaded wall pockets." },
+            { section: "section_1", name: "Foxglove", botanical: "Digitalis purpurea", size: "3-5 ft tall", water: "Moderate", bloom: "Early summer", desc: "Spires of speckled, bell-shaped flowers." },
+            { section: "section_1", name: "Peony", botanical: "Paeonia", size: "3 ft tall/wide", water: "Moderate", bloom: "Late spring", desc: "Massive, fragrant blooms; loves cold winters." },
+            { section: "section_1", name: "Hosta", botanical: "Hosta", size: "2 ft tall, 4 ft wide", water: "Moderate to high", bloom: "Mid-summer", desc: "Massive, variegated, fancy leaves for structure." },
+            { section: "section_1", name: "Bleeding Heart", botanical: "Lamprocapnos spectabilis", size: "2-3 ft tall", water: "Moderate", bloom: "Spring", desc: "Arching stems with dangling pink hearts." },
+            { section: "section_1", name: "Lupine", botanical: "Lupinus", size: "3-4 ft tall", water: "Moderate", bloom: "Late spring", desc: "Architectural flower spikes, fixes soil nitrogen." },
+            { section: "section_1", name: "Japanese Anemone", botanical: "Eriocapitella hupehensis", size: "3-4 ft tall", water: "Moderate to high", bloom: "Late summer/fall", desc: "Delicate flowers dancing on tall stems." },
+            { section: "section_1", name: "Clematis", botanical: "Clematis", size: "6-10 ft vine", water: "Moderate", bloom: "Summer", desc: "Climbing vine perfect for training up the wall." },
+            { section: "section_1", name: "Siberian Iris", botanical: "Iris sibirica", size: "3 ft tall", water: "Moderate", bloom: "Spring", desc: "Upright, structural, sword-like fancy foliage." },
+            { section: "section_1", name: "Ligularia", botanical: "Ligularia dentata", size: "3-4 ft tall", water: "High", bloom: "Summer", desc: "Massive dramatic purple-green elephant ear leaves." },
+            { section: "section_1", name: "Monkshood", botanical: "Aconitum napellus", size: "3-4 ft tall", water: "Moderate", bloom: "Late summer", desc: "Tall, deep violet-blue spires. Very cold hardy." },
+            { section: "section_1", name: "Bergenia", botanical: "Bergenia cordifolia", size: "1.5 ft tall", water: "Moderate", bloom: "Spring", desc: "Thick leathery leaves that turn burgundy in winter." },
+            
+            // SECTION 2
+            { section: "section_2", name: "Pansy / Viola", botanical: "Viola", size: "6-9 inches", water: "Consistent moisture", bloom: "Spring and Fall", desc: "Cheerful, cold-tolerant faced flowers." },
+            { section: "section_2", name: "Sweet Alyssum", botanical: "Lobularia maritima", size: "4-8 inches", water: "Moderate", bloom: "Spring to frost", desc: "Fragrant, honey-scented cascading white carpet." },
+            { section: "section_2", name: "Dianthus", botanical: "Dianthus", size: "6-12 inches", water: "Moderate", bloom: "Spring/Summer", desc: "Spicy-scented fringed flowers, blue-green foliage." },
+            { section: "section_2", name: "Creeping Phlox", botanical: "Phlox subulata", size: "4-6 inches", water: "Low", bloom: "Spring", desc: "Evergreen mat erupting into solid pink/purple color." },
+            { section: "section_2", name: "Sedum", botanical: "Sedum", size: "3-6 inches", water: "Very Low", bloom: "Late Summer", desc: "Succulent foliage thriving in dry slope edges." },
+            { section: "section_2", name: "English Lavender", botanical: "Lavandula angustifolia", size: "1-2 ft tall", water: "Low", bloom: "Summer", desc: "Silvery foliage and fragrant purple spikes." },
+            { section: "section_2", name: "Perennial Geranium", botanical: "Geranium", size: "1 ft tall, spreading", water: "Moderate", bloom: "Summer", desc: "Dense weed-suppressing mat with dainty blooms." },
+            { section: "section_2", name: "Lobelia", botanical: "Lobelia erinus", size: "4-8 inches", water: "High", bloom: "Spring to frost", desc: "Intense true-blue cascading mounds." },
+            { section: "section_2", name: "Calendula", botanical: "Calendula officinalis", size: "1-2 ft tall", water: "Moderate", bloom: "Summer/Fall", desc: "Cheerful orange blooms loving cool summers." },
+            { section: "section_2", name: "Nasturtium", botanical: "Tropaeolum majus", size: "Trailing to 6 ft", water: "Moderate", bloom: "Summer", desc: "Trailing vines climbing down the slope; edible." },
+            { section: "section_2", name: "Snowdrops", botanical: "Galanthus nivalis", size: "4-6 inches", water: "Moderate", bloom: "Late Winter", desc: "Hardy bulbs pushing right through the snow." },
+            { section: "section_2", name: "Grape Hyacinth", botanical: "Muscari", size: "6-8 inches", water: "Moderate", bloom: "Mid-spring", desc: "Dense rivers of blue across the slope." },
+            { section: "section_2", name: "Saffron Crocus", botanical: "Crocus sativus", size: "4-6 inches", water: "Low", bloom: "Autumn", desc: "Stunning autumn blooms yielding real saffron." },
+            { section: "section_2", name: "Dwarf Tulips", botanical: "Tulipa", size: "8-10 inches", water: "Moderate", bloom: "Spring", desc: "Sturdy, wind-resistant early spring color." },
+            { section: "section_2", name: "Daffodils", botanical: "Narcissus", size: "10-12 inches", water: "Moderate", bloom: "Spring", desc: "Naturalize beautifully; deer resistant." },
+            { section: "section_2", name: "Forget-Me-Not", botanical: "Myosotis", size: "6-12 inches", water: "High", bloom: "Spring", desc: "Self-seeds into ethereal drifts of bright blue." },
+            { section: "section_2", name: "Lily of the Valley", botanical: "Convallaria majalis", size: "6-10 inches", water: "Moderate", bloom: "Spring", desc: "Aggressive spreader stabilizing shaded slopes." },
+            { section: "section_2", name: "Bugleweed", botanical: "Ajuga reptans", size: "4-6 inches", water: "Moderate", bloom: "Spring", desc: "Fast-spreading bronze foliage and blue spikes." },
+            { section: "section_2", name: "Aubrieta", botanical: "Aubrieta", size: "4-6 inches", water: "Moderate", bloom: "Spring", desc: "Cascades heavily over retaining rocks and borders." },
+            { section: "section_2", name: "Bellflower", botanical: "Campanula", size: "8-12 inches", water: "Moderate", bloom: "Summer", desc: "Neat mounds smothered in blue/white upward bells." }
+        ];
+
+        createApp({
+            data() {
+                return {
+                    plants: plantsData.map(p => ({ ...p, image: null, loading: true })),
+                    activeTab: 'section_1'
+                }
+            },
+            computed: {
+                filteredPlants() {
+                    return this.plants.filter(p => p.section === this.activeTab);
+                }
+            },
+            mounted() {
+                this.plants.forEach(plant => this.fetchImage(plant));
+            },
+            methods: {
+                async fetchImage(plant) {
+                    try {
+                        // Use Wikipedia REST API for much higher reliability
+                        // Split the botanical name and take the first word (Genus) to guarantee a hit
+                        const genus = encodeURIComponent(plant.botanical.split(' ')[0]);
+                        const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${genus}`);
+                        const data = await res.json();
+                        
+                        if (data.thumbnail && data.thumbnail.source) {
+                            // Request a higher resolution version of the thumbnail
+                            plant.image = data.thumbnail.source.replace(/\d+px/, '600px');
+                        } else {
+                            this.setFallback(plant);
+                        }
+                    } catch (e) {
+                        this.setFallback(plant);
+                    } finally {
+                        plant.loading = false;
+                    }
+                },
+                setFallback(plant) {
+                    // Generates a clean, professional placeholder with the plant's name if wiki fails
+                    plant.image = `https://placehold.co/600x400/e2ede6/2c4a3b?text=${encodeURIComponent(plant.name)}`;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
