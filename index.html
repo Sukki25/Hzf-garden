@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baramulla Garden Curation | Master Portfolio</title>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #f7f9f8;
+            --primary-dark: #1f362a;
+            --primary: #2c4a3b;
+            --accent: #c1a87c;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: #333;
+        }
+        h1, h2, h3, h4, .font-serif { 
+            font-family: 'Playfair Display', serif; 
+        }
+        [v-cloak] { display: none; }
+        
+        /* Smooth transitions */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        .slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(40px); }
+        
+        .plant-card { transition: all 0.3s ease; cursor: pointer; }
+        .plant-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .plant-img { object-fit: cover; width: 100%; height: 260px; transition: transform 0.5s ease; }
+        .plant-card:hover .plant-img { transform: scale(1.05); }
+        
+        /* Custom Scrollbar for Modal */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1a87c; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a68c5e; }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak class="min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="bg-[#1f362a] text-white pt-16 pb-12 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="container mx-auto px-6 relative z-10 text-center">
+                <p class="text-[#c1a87c] uppercase tracking-[0.2em] text-sm font-semibold mb-3">Botanical Portfolio</p>
+                <h1 class="text-5xl md:text-6xl font-bold mb-4 tracking-tight">Baramulla Landscape</h1>
+                <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto font-light">
+                    A curated collection of climate-optimized, cold-hardy perennials and structured foliage for temperate mountain gardens.
+                </p>
+            </div>
+        </header>
+
+        <main class="flex-grow container mx-auto px-4 py-12">
+            
+            <!-- Controls (Tabs & Search) -->
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6 mb-12 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex bg-gray-100 rounded-xl p-1 w-full lg:w-auto">
+                    <button @click="activeTab = 'section_1'" 
+                            :class="['flex-1 px-8 py-3 rounded-lg font-medium transition-all duration-300', activeTab === 'section_1' ? 'bg-[#2c4a3b] text-white shadow-md' : 'text-gray-600 hover:text-gray-900']">
+                        <i class="fas fa-layer-group mr-2"></i> Elevated Wall Pockets
+                    </button>
+                    <button @click="activeTab = 'section_2'" 
+                            :class="['flex-1 px-8 py-3 rounded-lg font-medium transition-all duration-300', activeTab === 'section_2' ? 'bg-[#2c4a3b] text-white shadow-md' : 'text-gray-600 hover:text-gray-900']">
+                        <i class="fas fa-seedling mr-2"></i> Sloped Flower Bed
+                    </button>
+                </div>
+                
+                <div class="relative w-full lg:w-96">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" v-model="searchQuery" placeholder="Search plants, colors, or features..." 
+                           class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c1a87c] focus:bg-white transition-all">
+                </div>
+            </div>
+
+            <!-- Quick Filters -->
+            <div class="flex flex-wrap justify-center gap-3 mb-10">
+                <button v-for="filter in filters" :key="filter" @click="toggleFilter(filter)"
+                        :class="['px-4 py-1.5 rounded-full text-sm font-medium border transition-colors', 
+                                activeFilter === filter ? 'bg-[#c1a87c] border-[#c1a87c] text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-[#c1a87c]']">
+                    {{ filter }}
+                </button>
+            </div>
+
+            <!-- Plant Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div v-for="plant in filteredPlants" :key="plant.name" @click="openModal(plant)" 
+                     class="bg-white rounded-2xl overflow-hidden plant-card border border-gray-100 flex flex-col h-full group">
+                    
+                    <!-- Image -->
+                    <div class="relative bg-gray-100 h-[260px] overflow-hidden">
+                        <div v-if="plant.loading" class="absolute inset-0 flex items-center justify-center bg-gray-50">
+                            <i class="fas fa-circle-notch fa-spin text-3xl text-[#c1a87c]"></i>
+                        </div>
+                        <img v-else-if="plant.image" :src="plant.image" :alt="plant.name" class="plant-img">
+                        <!-- Fallback Placeholder -->
+                        <div v-else class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#e8f0eb] to-[#d1e0d6] text-[#2c4a3b]">
+                            <i class="fas fa-leaf text-5xl mb-3 opacity-50"></i>
+                            <span class="font-serif italic text-lg opacity-70">{{ plant.botanical }}</span>
+                        </div>
+                        
+                        <!-- Badges overlay -->
+                        <div class="absolute top-4 left-4 flex flex-col gap-2">
+                            <span v-if="plant.sun === 'Full Sun'" class="bg-white/90 backdrop-blur text-yellow-600 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                <i class="fas fa-sun mr-1"></i> Full Sun
+                            </span>
+                            <span v-if="plant.maintenance === 'Low'" class="bg-[#2c4a3b]/90 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                <i class="fas fa-check mr-1"></i> Easy Care
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h2 class="text-2xl font-bold text-[#1f362a] font-serif group-hover:text-[#c1a87c] transition-colors">{{ plant.name }}</h2>
+                        </div>
+                        <h3 class="text-sm text-gray-500 italic mb-4">{{ plant.botanical }}</h3>
+                        
+                        <p class="text-gray-600 text-sm line-clamp-2 mb-5 flex-grow">
+                            {{ plant.description }}
+                        </p>
+                        
+                        <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
+                            <span class="text-[#2c4a3b] font-medium"><i class="fas fa-calendar-alt mr-2 text-[#c1a87c]"></i>{{ plant.bloom }}</span>
+                            <span class="text-[#c1a87c] flex items-center group-hover:translate-x-1 transition-transform">Details <i class="fas fa-arrow-right ml-1 text-xs"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-if="filteredPlants.length === 0" class="text-center py-20">
+                <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-serif text-gray-600">No plants match your current criteria.</h3>
+                <button @click="clearFilters" class="mt-4 text-[#c1a87c] font-medium hover:underline">Clear all filters</button>
+            </div>
+        </main>
+
+        <!-- Deep Dive Modal -->
+        <transition name="fade">
+            <div v-if="selectedPlant" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm" @click.self="closeModal">
+                <transition name="slide-up">
+                    <div v-if="selectedPlant" class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative">
+                        
+                        <!-- Close Button -->
+                        <button @click="closeModal" class="absolute top-4 right-4 z-10 bg-white/50 hover:bg-white text-gray-800 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-sm backdrop-blur">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+
+                        <!-- Modal Image Half -->
+                        <div class="w-full md:w-2/5 h-64 md:h-auto relative bg-gray-100">
+                            <img v-if="selectedPlant.image" :src="selectedPlant.image" class="w-full h-full object-cover" :alt="selectedPlant.name">
+                            <div v-else class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#e8f0eb] to-[#d1e0d6] text-[#2c4a3b]">
+                                <i class="fas fa-leaf text-6xl mb-4 opacity-50"></i>
+                            </div>
+                        </div>
+
+                        <!-- Modal Content Half -->
+                        <div class="w-full md:w-3/5 p-8 md:p-10 overflow-y-auto custom-scrollbar">
+                            <div class="mb-6">
+                                <span class="text-[#c1a87c] uppercase tracking-wider text-xs font-bold">{{ activeTab === 'section_1' ? 'Elevated Pocket' : 'Slope Bed' }}</span>
+                                <h2 class="text-4xl font-serif font-bold text-[#1f362a] mt-1 mb-1">{{ selectedPlant.name }}</h2>
+                                <h3 class="text-lg text-gray-500 italic">{{ selectedPlant.botanical }}</h3>
+                            </div>
+
+                            <p class="text-gray-700 text-lg mb-8 leading-relaxed">
+                                {{ selectedPlant.description }}
+                            </p>
+
+                            <div class="grid grid-cols-2 gap-6 mb-8">
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <div class="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Watering</div>
+                                    <div class="text-gray-800 font-medium flex items-center"><i class="fas fa-tint text-blue-400 mr-2"></i> {{ selectedPlant.water }}</div>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <div class="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Sunlight</div>
+                                    <div class="text-gray-800 font-medium flex items-center"><i class="fas fa-sun text-yellow-500 mr-2"></i> {{ selectedPlant.sun }}</div>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <div class="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Size</div>
+                                    <div class="text-gray-800 font-medium flex items-center"><i class="fas fa-ruler-combined text-gray-500 mr-2"></i> {{ selectedPlant.size }}</div>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <div class="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Maintenance</div>
+                                    <div class="text-gray-800 font-medium flex items-center"><i class="fas fa-seedling text-green-500 mr-2"></i> {{ selectedPlant.maintenance }}</div>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-gray-100 pt-6">
+                                <h4 class="text-xl font-serif font-bold text-[#1f362a] mb-4">Cultivation Strategy for Baramulla</h4>
+                                <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                    {{ selectedPlant.care_instructions }}
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-4">
+                                    <span class="bg-[#e8f0eb] text-[#2c4a3b] text-xs px-3 py-1.5 rounded text-medium font-medium">Zone 3-8 Hardy</span>
+                                    <span v-if="selectedPlant.attracts" class="bg-[#fcf4e3] text-[#a68c5e] text-xs px-3 py-1.5 rounded text-medium font-medium">Attracts {{ selectedPlant.attracts }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+        </transition>
+
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const plantsData = [
+            // SECTION 1
+            { 
+                section: "section_1", name: "Bigleaf Hydrangea", botanical: "Hydrangea macrophylla", 
+                size: "3-5 ft tall/wide", water: "High, keep moist", sun: "Part Shade", maintenance: "Medium", bloom: "Summer", attracts: "Bees",
+                description: "Famous for its massive, globe-shaped flower heads. The dense, lush foliage provides excellent structure against walls.",
+                care_instructions: "In Baramulla, plant in your elevated pocket where it receives morning sun but is protected from harsh afternoon heat by the wall. The soil pH determines the bloom color: add aluminum sulfate for blue flowers, or garden lime for pink. Do not let the soil dry out." 
+            },
+            { 
+                section: "section_1", name: "English Shrub Rose", botanical: "Rosa 'David Austin'", 
+                size: "4-5 ft tall/wide", water: "Moderate to Deep", sun: "Full Sun", maintenance: "Medium", bloom: "Summer/Fall", attracts: "Pollinators",
+                description: "Offers the romantic shape and intense fragrance of old roses, combined with the robustness and repeat blooming of modern hybrids.",
+                care_instructions: "Thrives in the cool mountain summers. Plant in rich, loamy soil. Prune aggressively in late winter before the new spring growth starts to maintain a tidy shape within the elevated pocket." 
+            },
+            { 
+                section: "section_1", name: "Pacific Delphinium", botanical: "Delphinium elatum", 
+                size: "4-6 ft tall", water: "High", sun: "Full Sun", maintenance: "High", bloom: "Early Summer", attracts: "Hummingbirds",
+                description: "Creates dramatic vertical impact with towering spikes of densely packed, vivid blue and deep purple flowers.",
+                care_instructions: "They absolutely love cool summers, making Baramulla perfect. Because they grow so tall, plant them near the back of the elevated pocket against the wall, and tie them to stakes to prevent mountain winds from snapping the hollow stems." 
+            },
+            { 
+                section: "section_1", name: "Daylily", botanical: "Hemerocallis", 
+                size: "2-3 ft tall", water: "Low", sun: "Full/Part Sun", maintenance: "Low", bloom: "Mid-Summer", attracts: "Butterflies",
+                description: "An incredibly tough, reliable perennial. Features arching, grass-like foliage that looks great even when not blooming, topped with trumpet-shaped flowers.",
+                care_instructions: "Extremely forgiving of poor soil and irregular watering. Though individual flowers last only one day (hence the name), a single established plant can produce hundreds of buds for a long display." 
+            },
+            { 
+                section: "section_1", name: "Purple Coneflower", botanical: "Echinacea purpurea", 
+                size: "2-4 ft tall", water: "Low", sun: "Full Sun", maintenance: "Low", bloom: "Summer to Fall", attracts: "Birds & Bees",
+                description: "Sturdy, upright stems bearing large daisy-like flowers with distinctive raised, spiky central cones. Very structural.",
+                care_instructions: "Once established, it is highly drought-resistant. Leave the dried flower heads on the plant during the Baramulla winter; the cones provide structural interest in the snow and seeds for overwintering birds." 
+            },
+            { 
+                section: "section_1", name: "Common Lilac", botanical: "Syringa vulgaris", 
+                size: "8-10 ft tall", water: "Moderate", sun: "Full Sun", maintenance: "Low", bloom: "Late Spring", attracts: "Butterflies",
+                description: "A beloved deciduous shrub known for its intensely fragrant, dense clusters of purple or white flowers.",
+                care_instructions: "Lilacs strictly require a cold winter freeze to set their flower buds, making them ideal for Kashmir. Requires well-draining, slightly alkaline soil. Prune immediately after flowering ceases." 
+            },
+            { 
+                section: "section_1", name: "Chinese Astilbe", botanical: "Astilbe chinensis", 
+                size: "2-3 ft tall", water: "High", sun: "Part/Full Shade", maintenance: "Medium", bloom: "Mid-Summer", attracts: "Bees",
+                description: "Produces striking, fluffy, feather-like flower plumes rising above attractive, fern-like green foliage.",
+                care_instructions: "If any part of your elevated wall pocket receives deep shade, plant Astilbe there. They require constantly moist, humus-rich soil. If they dry out, the foliage will rapidly turn brown and crisp." 
+            },
+            { 
+                section: "section_1", name: "Common Foxglove", botanical: "Digitalis purpurea", 
+                size: "3-5 ft tall", water: "Moderate", sun: "Part Shade", maintenance: "Low", bloom: "Early Summer", attracts: "Bees",
+                description: "A woodland classic featuring tall, majestic spires of tubular, bell-shaped flowers that are often beautifully speckled inside.",
+                care_instructions: "Typically a biennial (grows foliage the first year, flowers and dies the second). Allow it to drop its seeds in the elevated bed, and a continuous colony will establish itself. Note: All parts are highly toxic if ingested." 
+            },
+            { 
+                section: "section_1", name: "Garden Peony", botanical: "Paeonia lactiflora", 
+                size: "3 ft tall/wide", water: "Moderate", sun: "Full Sun", maintenance: "Low", bloom: "Late Spring", attracts: "Ants (Beneficial)",
+                description: "Exceptionally long-lived plants producing massive, lush, heavily fragrant double-blooms. The deep green foliage remains attractive until frost.",
+                care_instructions: "Peonies demand a pronounced winter chill to bloom, thriving in Baramulla. Plant the roots shallowly (eyes no more than 2 inches deep). They resent being moved, so choose their spot against the wall carefully." 
+            },
+            { 
+                section: "section_1", name: "Plantain Lily", botanical: "Hosta", 
+                size: "2 ft tall, 3 ft wide", water: "Moderate", sun: "Shade", maintenance: "Low", bloom: "Late Summer", attracts: "Hummingbirds",
+                description: "Grown primarily for their magnificent, broad, corrugated leaves which come in shades of blue-green, lime, and variegated whites.",
+                care_instructions: "The ultimate shade-loving structural plant. They die back completely in the winter snow and emerge rapidly in spring. Protect from slugs during the wet spring months." 
+            },
+
+            // SECTION 2
+            { 
+                section: "section_2", name: "Sweet Alyssum", botanical: "Lobularia maritima", 
+                size: "4-8 inches", water: "Moderate", sun: "Full/Part Sun", maintenance: "Low", bloom: "Spring to Frost", attracts: "Bees",
+                description: "A vigorous, low-growing annual that spreads to form a dense, cascading carpet of tiny, honey-scented white or purple flowers.",
+                care_instructions: "Plant this directly at the edge of your sloped bed right against your white stones. It will beautifully spill over the border, softening the hardscape. Tolerates cool weather beautifully." 
+            },
+            { 
+                section: "section_2", name: "Creeping Phlox", botanical: "Phlox subulata", 
+                size: "4-6 inches", water: "Low", sun: "Full Sun", maintenance: "Low", bloom: "Mid-Spring", attracts: "Butterflies",
+                description: "An evergreen, mat-forming perennial groundcover. In spring, it erupts into a literal solid carpet of star-shaped flowers.",
+                care_instructions: "Perfect for sloped beds as its dense root system helps prevent soil erosion. Once the spectacular spring bloom finishes, trim lightly to maintain a neat green mat for the rest of the year." 
+            },
+            { 
+                section: "section_2", name: "English Lavender", botanical: "Lavandula angustifolia", 
+                size: "1-2 ft tall", water: "Low", sun: "Full Sun", maintenance: "Medium", bloom: "Summer", attracts: "Bees & Butterflies",
+                description: "Prized for its aromatic silvery-green foliage and upright spikes of fragrant purple flowers. A staple for sensory gardens.",
+                care_instructions: "Lavender demands excellent drainage, making a sloped bed ideal. Never overwater, and avoid rich fertilizers. Prune back by one-third after flowering to prevent the plant from becoming woody at the base." 
+            },
+            { 
+                section: "section_2", name: "Perennial Cranesbill", botanical: "Geranium 'Rozanne'", 
+                size: "1-1.5 ft tall, 2 ft spread", water: "Moderate", sun: "Full/Part Sun", maintenance: "Low", bloom: "Early Summer to Frost", attracts: "Butterflies",
+                description: "A sprawling, vigorous groundcover that weaves between other plants, continuously producing violet-blue, saucer-shaped flowers.",
+                care_instructions: "Incredibly hardy and easy to grow. It is fantastic for the sloped bed because it acts as a 'living mulch', spreading out to shade the soil and suppress weeds among your taller bulbs." 
+            },
+            { 
+                section: "section_2", name: "Saffron Crocus", botanical: "Crocus sativus", 
+                size: "4-6 inches", water: "Low", sun: "Full Sun", maintenance: "Medium", bloom: "Autumn", attracts: "Bees",
+                description: "A specialty bulb producing striking lilac-purple flowers with bright red stigmas—the source of the world's most expensive spice, Saffron.",
+                care_instructions: "A signature plant for Kashmir. Plant corms 4 inches deep in well-draining soil on the slope. They remain dormant all summer and suddenly emerge and bloom in autumn. Harvest the red threads on the morning they open." 
+            },
+            { 
+                section: "section_2", name: "Dwarf Daffodil", botanical: "Narcissus 'Tête-à-tête'", 
+                size: "8-10 inches", water: "Moderate", sun: "Full Sun", maintenance: "Low", bloom: "Early Spring", attracts: "Early Bees",
+                description: "Miniature, perfectly proportioned daffodils that produce multiple cheerful yellow blooms per stem.",
+                care_instructions: "Plant these bulbs in clusters across the slope in autumn. They naturalize (multiply) effortlessly over the years. Importantly, they contain lycorine, making them completely immune to deer, rabbits, and rodents." 
+            },
+            { 
+                section: "section_2", name: "Lily of the Valley", botanical: "Convallaria majalis", 
+                size: "6-10 inches", water: "Moderate", sun: "Shade", maintenance: "Low", bloom: "Spring", attracts: "None",
+                description: "Produces arching stems adorned with tiny, exquisite, nodding white bell-shaped flowers that possess an intoxicatingly sweet perfume.",
+                care_instructions: "Thrives in cool, damp, shaded areas. It spreads vigorously via underground rhizomes, making it exceptional at binding the soil on the shaded parts of your slope. (Note: Highly toxic)." 
+            },
+            { 
+                section: "section_2", name: "Grape Hyacinth", botanical: "Muscari armeniacum", 
+                size: "6-8 inches", water: "Moderate", sun: "Full Sun", maintenance: "Low", bloom: "Mid-Spring", attracts: "Bees",
+                description: "Produces dense, tightly packed, cone-shaped clusters of vivid cobalt-blue flowers that resemble tiny bunches of grapes.",
+                care_instructions: "Plant bulbs in autumn. They look best planted in massive drifts, creating a 'river' of blue down the slope. The grassy foliage appears in autumn, survives the winter snow, and blooms in spring." 
+            },
+            { 
+                section: "section_2", name: "Snowdrops", botanical: "Galanthus nivalis", 
+                size: "4-6 inches", water: "Moderate", sun: "Part Shade", maintenance: "Low", bloom: "Late Winter", attracts: "Early Pollinators",
+                description: "Delicate, nodding white bell-shaped flowers. They are famously the very first flowers to break dormancy, often blooming while snow is still on the ground.",
+                care_instructions: "Plant bulbs in the fall in humus-rich soil. They provide unmatched psychological relief at the end of a long, cold Baramulla winter. Allow the foliage to die back naturally after blooming to recharge the bulb." 
+            },
+            { 
+                section: "section_2", name: "Carpathian Bellflower", botanical: "Campanula carpatica", 
+                size: "8-12 inches", water: "Moderate", sun: "Full/Part Sun", maintenance: "Low", bloom: "Summer", attracts: "Butterflies",
+                description: "Forms a tidy, low-growing mound of bright green foliage that becomes completely smothered in upward-facing, cup-shaped blue or white flowers.",
+                care_instructions: "Excellent for edging the stone border of the sloped bed. Deadheading (removing spent flowers) will encourage it to continuously bloom throughout the temperate mountain summer." 
+            }
+        ];
+
+        createApp({
+            data() {
+                return {
+                    plants: plantsData.map(p => ({ ...p, image: null, loading: true })),
+                    activeTab: 'section_1',
+                    searchQuery: '',
+                    activeFilter: 'All',
+                    filters: ['All', 'Full Sun', 'Part Shade', 'Low Maintenance', 'Drought Tolerant'],
+                    selectedPlant: null
+                }
+            },
+            computed: {
+                filteredPlants() {
+                    let result = this.plants.filter(p => p.section === this.activeTab);
+                    
+                    // Search
+                    if (this.searchQuery) {
+                        const sq = this.searchQuery.toLowerCase();
+                        result = result.filter(p => 
+                            p.name.toLowerCase().includes(sq) || 
+                            p.botanical.toLowerCase().includes(sq) ||
+                            p.description.toLowerCase().includes(sq)
+                        );
+                    }
+                    
+                    // Filters
+                    if (this.activeFilter !== 'All') {
+                        if (this.activeFilter === 'Full Sun') result = result.filter(p => p.sun.includes('Full Sun'));
+                        if (this.activeFilter === 'Part Shade') result = result.filter(p => p.sun.includes('Shade'));
+                        if (this.activeFilter === 'Low Maintenance') result = result.filter(p => p.maintenance === 'Low');
+                        if (this.activeFilter === 'Drought Tolerant') result = result.filter(p => p.water === 'Low');
+                    }
+                    
+                    return result;
+                }
+            },
+            mounted() {
+                this.plants.forEach(plant => this.fetchImage(plant));
+            },
+            methods: {
+                async fetchImage(plant) {
+                    try {
+                        // Use Wikipedia REST API - High reliability
+                        const genus = encodeURIComponent(plant.botanical.split(' ')[0]);
+                        // If it's a specific known cultivar string, just use the genus for image fetching
+                        const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${genus}`);
+                        const data = await res.json();
+                        
+                        if (data.thumbnail && data.thumbnail.source) {
+                            // Request higher resolution
+                            plant.image = data.thumbnail.source.replace(/\d+px/, '800px');
+                        }
+                    } catch (e) {
+                        console.log("Image fetch failed for", plant.name);
+                        // Fails silently, HTML template handles fallback UI elegantly
+                    } finally {
+                        plant.loading = false;
+                    }
+                },
+                toggleFilter(filter) {
+                    this.activeFilter = this.activeFilter === filter ? 'All' : filter;
+                },
+                clearFilters() {
+                    this.searchQuery = '';
+                    this.activeFilter = 'All';
+                },
+                openModal(plant) {
+                    this.selectedPlant = plant;
+                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                },
+                closeModal() {
+                    this.selectedPlant = null;
+                    document.body.style.overflow = '';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
