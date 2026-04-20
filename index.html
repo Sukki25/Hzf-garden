@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Curation Portfolio</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --sage: #2c4a3b; --gold: #c1a87c; --offwhite: #f8faf9; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--offwhite); color: #1a2f24; scroll-behavior: smooth; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        [v-cloak] { display: none; }
+        .card { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; border: 1px solid #e2ede6; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 30px 60px -12px rgba(44,74,59,0.12); border-color: var(--gold); }
+        .img-container { height: 280px; overflow: hidden; position: relative; background: #e2ede6; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease; }
+        .card:hover .img-container img { transform: scale(1.1); }
+        .badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; }
+        .modal-overlay { background: rgba(26,47,36,0.85); backdrop-blur: 8px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        .dashboard-card { background: white; border-radius: 20px; border: 1px solid #eef3f0; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+        .wordmark { letter-spacing: -0.04em; }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak class="min-h-screen">
+        <!-- Header Wordmark -->
+        <header class="py-12 border-b border-gray-100 bg-white sticky top-0 z-40">
+            <div class="container mx-auto px-6 flex justify-between items-center">
+                <div class="text-4xl font-serif font-bold text-[#2c4a3b] wordmark">H<span class="text-[#c1a87c]">z</span>f</div>
+                <nav class="hidden md:flex gap-8 text-sm font-semibold uppercase tracking-widest text-gray-500">
+                    <a href="#" @click="activeSection = 'wall_pockets'" :class="activeSection === 'wall_pockets' ? 'text-[#c1a87c]' : ''">Wall Pockets</a>
+                    <a href="#" @click="activeSection = 'flower_bed'" :class="activeSection === 'flower_bed' ? 'text-[#c1a87c]' : ''">Flower Bed</a>
+                    <a href="#" @click="activeSection = 'trees'" :class="activeSection === 'trees' ? 'text-[#c1a87c]' : ''">Trees</a>
+                    <a href="#" @click="activeSection = 'dashboard'" :class="activeSection === 'dashboard' ? 'text-[#c1a87c]' : ''">Dashboard</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-6 py-12">
+            <!-- Section Hero -->
+            <div class="mb-16 text-center max-w-2xl mx-auto" v-if="activeSection !== 'dashboard'">
+                <h1 class="text-5xl font-serif font-bold mb-4">Garden Curation</h1>
+                <p class="text-gray-500 uppercase tracking-widest text-xs font-bold">Optimized for Baramulla's Weather Conditions</p>
+                <div class="mt-8 relative max-w-md mx-auto">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" v-model="search" placeholder="Search by name or botanical..." class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-full focus:ring-2 focus:ring-[#c1a87c] outline-none">
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div v-if="activeSection === 'dashboard'" class="max-w-5xl mx-auto space-y-12">
+                <div class="text-center">
+                    <h1 class="text-5xl font-serif font-bold mb-4">Gardening Dashboard</h1>
+                    <p class="text-gray-500 uppercase tracking-widest text-xs font-bold">Maintenance, Upkeep & Checklists</p>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Seasonal Logic -->
+                    <div class="dashboard-card p-8">
+                        <h3 class="text-2xl font-serif font-bold mb-6 flex items-center gap-3">
+                            <i class="fas fa-calendar-check text-[#c1a87c]"></i> Maintenance Checklists
+                        </h3>
+                        <div class="space-y-4">
+                            <details class="group border-b border-gray-100 pb-3" open>
+                                <summary class="font-bold cursor-pointer list-none flex justify-between items-center text-[#2c4a3b]">
+                                    Weekly Checklist <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180"></i>
+                                </summary>
+                                <ul class="mt-4 space-y-2 text-sm text-gray-600 pl-4 list-disc">
+                                    <li>Check moisture in wall pockets; they dry out faster.</li>
+                                    <li>Deadhead faded roses and perennials to encourage rebloom.</li>
+                                    <li>Inspect leaves for aphids or powdery mildew (common in Baramulla humidity).</li>
+                                    <li>Weed the slope bed to prevent root competition.</li>
+                                </ul>
+                            </details>
+                            <details class="group border-b border-gray-100 pb-3">
+                                <summary class="font-bold cursor-pointer list-none flex justify-between items-center text-[#2c4a3b]">
+                                    Monthly Checklist <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180"></i>
+                                </summary>
+                                <ul class="mt-4 space-y-2 text-sm text-gray-600 pl-4 list-disc">
+                                    <li>Deep feed flowering shrubs with liquid potassium.</li>
+                                    <li>Edge the stone border around the slope bed.</li>
+                                    <li>Prune back any aggressive vines (Clematis/Ivy).</li>
+                                    <li>Apply organic mulch to maintain root coolness.</li>
+                                </ul>
+                            </details>
+                            <details class="group border-b border-gray-100 pb-3">
+                                <summary class="font-bold cursor-pointer list-none flex justify-between items-center text-[#2c4a3b]">
+                                    Quarterly / Yearly <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180"></i>
+                                </summary>
+                                <ul class="mt-4 space-y-2 text-sm text-gray-600 pl-4 list-disc">
+                                    <li><strong>Autumn:</strong> Plant bulbs (Saffron/Tulips) and dig up Dahlia tubers.</li>
+                                    <li><strong>Winter:</strong> Heavy mulch base of Peonies and Hydrangeas before snow.</li>
+                                    <li><strong>Spring:</strong> Hard prune Mock Orange and Butterfly Bush.</li>
+                                    <li><strong>Yearly:</strong> Inspect tree health (Maple/Birch) for storm damage.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- Climate Optimization -->
+                    <div class="dashboard-card p-8 bg-[#2c4a3b] text-white">
+                        <h3 class="text-2xl font-serif font-bold mb-6 flex items-center gap-3">
+                            <i class="fas fa-snowflake text-[#c1a87c]"></i> Climate Optimization
+                        </h3>
+                        <div class="space-y-6 text-sm">
+                            <div class="bg-white/10 p-4 rounded-xl">
+                                <h4 class="font-bold text-[#c1a87c] mb-1">Dealing with Snowfall</h4>
+                                <p class="text-gray-300">In Baramulla, snow acts as an insulator. Avoid shaking snow off woody branches unless it threatens to snap them. For perennials, a layer of snow protects roots from deep ground freeze.</p>
+                            </div>
+                            <div class="bg-white/10 p-4 rounded-xl">
+                                <h4 class="font-bold text-[#c1a87c] mb-1">The Wall Microclimate</h4>
+                                <p class="text-gray-300">Your wall pockets store heat. Use them for plants that are slightly more frost-sensitive (like Fuchsias). Conversely, they dry out faster in summer; water these twice as often.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plant Cards Grid -->
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div v-for="p in filteredList" :key="p.id" class="card bg-white rounded-3xl overflow-hidden flex flex-col" @click="selected = p">
+                    <div class="img-container">
+                        <div v-if="p.loading" class="absolute inset-0 flex items-center justify-center bg-gray-50"><i class="fas fa-circle-notch fa-spin text-[#gold]"></i></div>
+                        <img :src="p.image || getPlaceholder(p)" :alt="p.name" @load="p.loading = false">
+                        <div class="absolute top-4 left-4 flex gap-2">
+                            <span class="badge bg-white/90 text-[#2c4a3b] shadow-sm">{{ p.maintenance }} Care</span>
+                            <span class="badge bg-[#c1a87c] text-white shadow-sm">{{ p.sun }}</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex-grow">
+                        <div class="text-xs font-bold text-[#c1a87c] uppercase tracking-widest mb-1">{{ p.botanical }}</div>
+                        <h2 class="text-2xl font-serif font-bold text-[#2c4a3b] leading-tight mb-4">{{ p.name }}</h2>
+                        <p class="text-sm text-gray-500 line-clamp-2">{{ p.desc }}</p>
+                    </div>
+                    <div class="px-8 pb-8 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-[#2c4a3b]">
+                        <span><i class="fas fa-calendar-alt mr-2 text-[#gold]"></i> {{ p.bloom }}</span>
+                        <i class="fas fa-arrow-right text-[#gold]"></i>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Deep Dive Modal -->
+        <div v-if="selected" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay" @click.self="selected = null">
+            <div class="bg-white w-full max-w-5xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+                <!-- Modal Image -->
+                <div class="w-full md:w-1/2 h-64 md:h-auto bg-gray-100 relative">
+                    <img :src="selected.image || getPlaceholder(selected)" class="w-full h-full object-cover">
+                    <button @click="selected = null" class="absolute top-6 left-6 w-12 h-12 bg-white/50 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- Modal Body -->
+                <div class="w-full md:w-1/2 p-10 overflow-y-auto custom-scroll">
+                    <div class="mb-8">
+                        <span class="text-xs font-bold text-[#c1a87c] uppercase tracking-widest">{{ activeSection === 'trees' ? 'Garden Feature' : 'Plant Specification' }}</span>
+                        <h2 class="text-4xl font-serif font-bold text-[#2c4a3b] mt-2">{{ selected.name }}</h2>
+                        <p class="text-lg italic text-gray-500">{{ selected.botanical }}</p>
+                    </div>
+
+                    <div class="space-y-8 text-sm">
+                        <!-- Fast Stats -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Watering Needs</div>
+                                <div class="font-bold text-[#2c4a3b]"><i class="fas fa-tint mr-2 text-blue-300"></i> {{ selected.water }}</div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Bloom Cycle</div>
+                                <div class="font-bold text-[#2c4a3b]"><i class="fas fa-clock mr-2 text-[#gold]"></i> {{ selected.bloom }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Full Details -->
+                        <div>
+                            <h4 class="font-bold uppercase tracking-widest text-[#2c4a3b] mb-3 border-b pb-2">Cultivation Strategy / Tips</h4>
+                            <p class="text-gray-600 leading-relaxed">{{ selected.tips }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold uppercase tracking-widest text-[#2c4a3b] mb-2 text-xs">Potential Problems</h4>
+                                <p class="text-gray-500 text-xs italic">{{ selected.problems }}</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold uppercase tracking-widest text-[#2c4a3b] mb-2 text-xs">Nutrients Required</h4>
+                                <p class="text-gray-500 text-xs">{{ selected.nutrients }}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#2c4a3b] text-white p-6 rounded-3xl">
+                            <h4 class="font-serif font-bold text-lg mb-2 text-[#c1a87c]">Benefits & Value</h4>
+                            <p class="text-xs text-gray-300 leading-relaxed">{{ selected.benefits }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    plants: [{"id": 1, "section": "wall_pockets", "name": "Bigleaf Hydrangea", "botanical": "Hydrangea macrophylla", "wiki": "Hydrangea_macrophylla", "size": "3-5 ft", "water": "High", "sun": "Part Shade", "maint": "Medium", "bloom": "Summer (June-Aug)", "attracts": "Bees", "desc": "Massive globe-shaped clusters. Soil pH dictates color.", "tips": "Acidify soil with sulfur for blue flowers; lime for pink. Mulch heavily in winter.", "problems": "Powdery mildew, leaf spot.", "nutrients": "Balanced 10-10-10 in spring.", "benefits": "High visual volume, shade tolerant."}, {"id": 2, "section": "wall_pockets", "name": "English Rose", "botanical": "Rosa 'David Austin'", "wiki": "Garden_roses", "size": "4-5 ft", "water": "Deep", "sun": "Full Sun", "maint": "High", "bloom": "Late Spring to Fall", "attracts": "Butterflies", "desc": "Romantic, multi-petaled fragrant blooms.", "tips": "Prune in late winter (Feb/Mar) to maintain shape. Ensure good air circulation.", "problems": "Black spot, aphids, rust.", "nutrients": "Specialized Rose Food every 4 weeks.", "benefits": "Intense fragrance, repeat blooming."}, {"id": 3, "section": "wall_pockets", "name": "Pacific Delphinium", "botanical": "Delphinium elatum", "wiki": "Delphinium", "size": "4-6 ft", "water": "High", "sun": "Full Sun", "maint": "High", "bloom": "Early Summer", "attracts": "Hummingbirds", "desc": "Majestic vertical blue spires. Focal point.", "tips": "Stake against wall to protect from mountain winds. Deadhead for rebloom.", "problems": "Slugs, powdery mildew.", "nutrients": "Potassium-rich liquid feed.", "benefits": "Dramatic vertical architecture."}, {"id": 4, "section": "wall_pockets", "name": "Hollyhock", "botanical": "Alcea rosea", "wiki": "Alcea_rosea", "size": "5-8 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Medium", "bloom": "Mid Summer", "attracts": "Pollinators", "desc": "Tall stalks with ruffled saucer-like flowers.", "tips": "Plant at the back of the pocket. Biennial but self-seeds easily.", "problems": "Rust fungus (common in humid spring).", "nutrients": "General compost.", "benefits": "Height, cottage garden charm."}, {"id": 5, "section": "wall_pockets", "name": "Garden Peony", "botanical": "Paeonia lactiflora", "wiki": "Peony", "size": "3 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Low", "bloom": "Late Spring", "attracts": "Ants", "desc": "Massive, lush, fragrant double-blooms.", "tips": "Plant shallow (2 inches deep). Needs winter chill to set buds.", "problems": "Botrytis blight.", "nutrients": "Bone meal in autumn.", "benefits": "Longevity (can live 50+ years)."}, {"id": 6, "section": "wall_pockets", "name": "Common Lilac", "botanical": "Syringa vulgaris", "wiki": "Syringa_vulgaris", "size": "8-10 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Low", "bloom": "Mid Spring", "attracts": "Butterflies", "desc": "Beloved fragrant spring clusters.", "tips": "Prune immediately after flowering. Thrives in Baramulla's freeze.", "problems": "Scale insects, powdery mildew.", "nutrients": "All-purpose fertilizer in spring.", "benefits": "Signature spring scent."}, {"id": 7, "section": "wall_pockets", "name": "Hosta", "botanical": "Hosta spp.", "wiki": "Hosta", "size": "2 ft", "water": "Moderate", "sun": "Shade", "maint": "Low", "bloom": "Late Summer", "attracts": "Bees", "desc": "Bold, variegated fancy foliage. Excellent filler.", "tips": "Protect from slugs. Mulch with wood chips.", "problems": "Slugs and snails.", "nutrients": "Organic compost.", "benefits": "Best plant for deep wall shade."}, {"id": 8, "section": "wall_pockets", "name": "Foxglove", "botanical": "Digitalis purpurea", "wiki": "Digitalis_purpurea", "size": "3-5 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Early Summer", "attracts": "Bees", "desc": "Bell-shaped speckled flowers on tall spires.", "tips": "Caution: Toxic. Do not plant if pets/children ingest plants.", "problems": "Leaf spot.", "nutrients": "Slow-release balanced spikes.", "benefits": "Unique structural spires."}, {"id": 9, "section": "wall_pockets", "name": "Bleeding Heart", "botanical": "Lamprocapnos spectabilis", "wiki": "Lamprocapnos_spectabilis", "size": "2-3 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Spring", "attracts": "Hummingbirds", "desc": "Arching stems with heart-shaped pink flowers.", "tips": "Goes dormant in late summer; plant near Hostas to fill gap.", "problems": "Root rot in soggy soil.", "nutrients": "Leaf mold / compost.", "benefits": "Exquisite floral shape."}, {"id": 10, "section": "wall_pockets", "name": "Astilbe", "botanical": "Astilbe chinensis", "wiki": "Astilbe", "size": "2-3 ft", "water": "High", "sun": "Shade", "maint": "Medium", "bloom": "Summer", "attracts": "Butterflies", "desc": "Feathery plumes in red, pink, or white.", "tips": "Never let it dry out. Prefers damp, rich wall corners.", "problems": "Dry leaf edges.", "nutrients": "Organic rich manure.", "benefits": "Adds texture to dark areas."}, {"id": 11, "section": "wall_pockets", "name": "Lupine", "botanical": "Lupinus polyphyllus", "wiki": "Lupinus_polyphyllus", "size": "3-4 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Medium", "bloom": "Late Spring", "attracts": "Bees", "desc": "Cone-shaped towers of flowers. Nitrogen fixer.", "tips": "Needs cool summers (perfect for Baramulla). Well-drained soil.", "problems": "Aphids.", "nutrients": "No nitrogen needed; use phosphorus.", "benefits": "Improves soil quality."}, {"id": 12, "section": "wall_pockets", "name": "Japanese Anemone", "botanical": "Eriocapitella hupehensis", "wiki": "Eriocapitella_hupehensis", "size": "3-4 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Medium", "bloom": "Late Summer/Fall", "attracts": "Pollinators", "desc": "Graceful papery flowers on tall wiry stems.", "tips": "Spreads slowly to fill pockets. Very hardy.", "problems": "Nematodes.", "nutrients": "Liquid seaweed fertilizer.", "benefits": "Essential autumn color."}, {"id": 13, "section": "wall_pockets", "name": "Clematis", "botanical": "Clematis spp.", "wiki": "Clematis", "size": "6-10 ft", "water": "Moderate", "sun": "Full Sun", "maint": "High", "bloom": "Summer", "attracts": "Butterflies", "desc": "Climbing vine. Needs support structure on wall.", "tips": "Roots must stay cool; shade base with stones or low plants.", "problems": "Clematis wilt.", "nutrients": "Tomato fertilizer is effective.", "benefits": "Vertical wall coverage."}, {"id": 14, "section": "wall_pockets", "name": "Siberian Iris", "botanical": "Iris sibirica", "wiki": "Iris_sibirica", "size": "3 ft", "water": "High", "sun": "Full Sun", "maint": "Low", "bloom": "Early Summer", "attracts": "Bees", "desc": "Sword-like leaves that stay green all season.", "tips": "Thrives in moist soil. Divide every 3-4 years.", "problems": "Iris borer (rare).", "nutrients": "Balanced feed in early spring.", "benefits": "Very structural foliage."}, {"id": 15, "section": "wall_pockets", "name": "Leopard Plant", "botanical": "Ligularia dentata", "wiki": "Ligularia_dentata", "size": "3-4 ft", "water": "Very High", "sun": "Shade", "maint": "High", "bloom": "Summer", "attracts": "Butterflies", "desc": "Massive purple-green leaves, yellow flowers.", "tips": "Wilts in direct sun. Keep soil almost soggy.", "problems": "Slugs love the large leaves.", "nutrients": "Heavy organic matter.", "benefits": "Dramatic focal point."}, {"id": 16, "section": "wall_pockets", "name": "Monkshood", "botanical": "Aconitum napellus", "wiki": "Aconitum_napellus", "size": "3-4 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Late Summer", "attracts": "Bees", "desc": "Deep violet-blue spires. Extremely cold hardy.", "tips": "Toxic. Handle with gloves. Deer resistant.", "problems": "Staking needed if too tall.", "nutrients": "Minimal.", "benefits": "Late season intense blue."}, {"id": 17, "section": "wall_pockets", "name": "Bergenia", "botanical": "Bergenia cordifolia", "wiki": "Bergenia_cordifolia", "size": "1.5 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Early Spring", "attracts": "Pollinators", "desc": "Leathery leaves turn burgundy in winter.", "tips": "'Pigsqueak' sound when leaves rub. Evergreen.", "problems": "Vine weevils.", "nutrients": "Standard compost.", "benefits": "Winter leaf color."}, {"id": 18, "section": "wall_pockets", "name": "Climbing Hydrangea", "botanical": "Hydrangea petiolaris", "wiki": "Hydrangea_petiolaris", "size": "10-20 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Summer", "attracts": "Bees", "desc": "Woody vine with lacy white flowers.", "tips": "Slow to establish but becomes very heavy.", "problems": "None serious.", "nutrients": "Spring mulch.", "benefits": "Natural wall clinging."}, {"id": 19, "section": "wall_pockets", "name": "Joe Pye Weed", "botanical": "Eutrochium purpureum", "wiki": "Eutrochium_purpureum", "size": "5-7 ft", "water": "High", "sun": "Full Sun", "maint": "Low", "bloom": "Late Summer", "attracts": "Butterflies", "desc": "Massive vanilla-scented flower heads.", "tips": "Requires space. Loves damp soil.", "problems": "Mildew.", "nutrients": "Rarely needed.", "benefits": "Pollinator magnet."}, {"id": 20, "section": "wall_pockets", "name": "Daylily (Stella d'Oro)", "botanical": "Hemerocallis 'Stella'", "wiki": "Hemerocallis", "size": "1 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer (Repeat)", "attracts": "Butterflies", "desc": "Golden-yellow trumpet flowers. Repeat bloomer.", "tips": "Deadhead spent flowers to keep blooms coming.", "problems": "None.", "nutrients": "Minimal.", "benefits": "Longest bloom period."}, {"id": 21, "section": "wall_pockets", "name": "Goat's Beard", "botanical": "Aruncus dioicus", "wiki": "Aruncus_dioicus", "size": "4-6 ft", "water": "High", "sun": "Part Shade", "maint": "Low", "bloom": "Summer", "attracts": "Bees", "desc": "Shrub-like perennial with white feathery plumes.", "tips": "Resembles giant Astilbe. Needs room.", "problems": "None.", "nutrients": "Rich compost.", "benefits": "Spectacular texture."}, {"id": 22, "section": "wall_pockets", "name": "Columbine", "botanical": "Aquilegia", "wiki": "Aquilegia", "size": "1-3 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Spring", "attracts": "Hummingbirds", "desc": "Delicate spurred flowers in many colors.", "tips": "Short-lived but self-seeds effectively.", "problems": "Leaf miners.", "nutrients": "Balanced spring feed.", "benefits": "Unique flower geometry."}, {"id": 23, "section": "wall_pockets", "name": "Fuchsia", "botanical": "Fuchsia magellanica", "wiki": "Fuchsia_magellanica", "size": "3-5 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Medium", "bloom": "Summer to Fall", "attracts": "Hummingbirds", "desc": "Dangling bell-shaped bicolor flowers.", "tips": "Kashmir's cold is manageable for this variety. Mulch base.", "problems": "Mites.", "nutrients": "Potash-rich liquid feed.", "benefits": "Exotic appearance."}, {"id": 24, "section": "wall_pockets", "name": "Mock Orange", "botanical": "Philadelphus", "wiki": "Philadelphus", "size": "6-8 ft", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Early Summer", "attracts": "Bees", "desc": "Shrub with citrus-scented white flowers.", "tips": "Prune 1/3 of oldest stems every year.", "problems": "None.", "nutrients": "All-purpose mulch.", "benefits": "Heavenly fragrance."}, {"id": 25, "section": "wall_pockets", "name": "Lavender (Giant)", "botanical": "Lavandula 'Phenomenal'", "wiki": "Lavandula_angustifolia", "size": "2.5-3 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Bees", "desc": "Highly fragrant spikes, very cold hardy.", "tips": "Must have perfect drainage. Do not overwater.", "problems": "Root rot.", "nutrients": "None needed.", "benefits": "Culinary and aromatic use."}, {"id": 26, "section": "wall_pockets", "name": "Black-Eyed Susan", "botanical": "Rudbeckia fulgida", "wiki": "Rudbeckia_fulgida", "size": "2-3 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Late Summer", "attracts": "Butterflies", "desc": "Bright yellow daisy-like petals, black centers.", "tips": "Clumping habit. Very reliable.", "problems": "Slug damage in spring.", "nutrients": "Compost.", "benefits": "Late season brightness."}, {"id": 27, "section": "wall_pockets", "name": "Butterfly Bush", "botanical": "Buddleja davidii", "wiki": "Buddleja_davidii", "size": "6-10 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Low", "bloom": "Summer to Fall", "attracts": "Butterflies", "desc": "Long arching cones of flowers.", "tips": "Cut back to 1 ft in late winter to reset growth.", "problems": "Spider mites.", "nutrients": "Avoid high nitrogen.", "benefits": "Supreme butterfly attractor."}, {"id": 28, "section": "wall_pockets", "name": "Hardy Hibiscus", "botanical": "Hibiscus moscheutos", "wiki": "Hibiscus_moscheutos", "size": "3-5 ft", "water": "High", "sun": "Full Sun", "maint": "Medium", "bloom": "Late Summer", "attracts": "Bees", "desc": "Enormous dinner-plate sized flowers.", "tips": "Emerges late in spring. Keep soil moist.", "problems": "Japanese beetles.", "nutrients": "High potassium.", "benefits": "Tropical look in cold climate."}, {"id": 29, "section": "wall_pockets", "name": "Red Hot Poker", "botanical": "Kniphofia", "wiki": "Kniphofia", "size": "3-4 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Hummingbirds", "desc": "Torches of orange and yellow flowers.", "tips": "Evergreen grass foliage. Needs well-drained soil.", "problems": "Thrips.", "nutrients": "Gravel mulch preferred.", "benefits": "Striking verticality."}, {"id": 30, "section": "wall_pockets", "name": "Ninebark", "botanical": "Physocarpus opulifolius", "wiki": "Physocarpus_opulifolius", "size": "6-8 ft", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Early Summer", "attracts": "Bees", "desc": "Dark purple fancy leaves. Peeling bark.", "tips": "'Diabolo' variety has deep wine-colored foliage.", "problems": "Powdery mildew.", "nutrients": "Minimal.", "benefits": "Dramatic foliage color."}, {"id": 31, "section": "flower_bed", "name": "Sweet Alyssum", "botanical": "Lobularia maritima", "wiki": "Lobularia_maritima", "size": "6 in", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Spring to Frost", "attracts": "Bees", "desc": "Honey-scented white/purple carpet.", "tips": "Spills over borders. Self-seeds readily.", "problems": "Heat stress (but Baramulla is fine).", "nutrients": "None needed.", "benefits": "Fragrance and border softening."}, {"id": 32, "section": "flower_bed", "name": "Creeping Phlox", "botanical": "Phlox subulata", "wiki": "Phlox_subulata", "size": "4-6 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Mid Spring", "attracts": "Butterflies", "desc": "Dense carpet of pink or blue flowers.", "tips": "Root system binds soil, preventing erosion on slopes.", "problems": "Spider mites.", "nutrients": "Slow release in spring.", "benefits": "Erosion control, ground carpet."}, {"id": 33, "section": "flower_bed", "name": "Dwarf Lavender", "botanical": "Lavandula 'Munstead'", "wiki": "Lavandula_angustifolia", "size": "1-1.5 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Bees", "desc": "Fragrant purple spikes. Compact habit.", "tips": "Avoid wet feet. Plant on top of slope for drainage.", "problems": "Root rot.", "nutrients": "None.", "benefits": "Aromatic and deer resistant."}, {"id": 34, "section": "flower_bed", "name": "Perennial Geranium", "botanical": "Geranium 'Rozanne'", "wiki": "Geranium", "size": "1 ft", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Summer to Frost", "attracts": "Butterflies", "desc": "Spreading habit with violet-blue flowers.", "tips": "One of the longest blooming perennials.", "problems": "None serious.", "nutrients": "Compost.", "benefits": "Dense weed suppressor."}, {"id": 35, "section": "flower_bed", "name": "Saffron Crocus", "botanical": "Crocus sativus", "wiki": "Crocus_sativus", "size": "6 in", "water": "Low", "sun": "Full Sun", "maint": "Medium", "bloom": "Autumn (Oct)", "attracts": "Bees", "desc": "Purple flowers yielding valuable saffron.", "tips": "Signature Baramulla specialty. Plant 4 in deep.", "problems": "Rodents (use wire mesh).", "nutrients": "Bone meal.", "benefits": "Economic and aesthetic value."}, {"id": 36, "section": "flower_bed", "name": "Dwarf Daffodil", "botanical": "Narcissus 'T\u00eate-\u00e0-t\u00eate'", "wiki": "Narcissus_(plant)", "size": "8 in", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Early Spring", "attracts": "Early Bees", "desc": "Miniature yellow trumpet flowers.", "tips": "Naturalizes easily. Deer/Rabbit resistant.", "problems": "None.", "nutrients": "Bulb fertilizer in fall.", "benefits": "First spring color."}, {"id": 37, "section": "flower_bed", "name": "Grape Hyacinth", "botanical": "Muscari", "wiki": "Muscari", "size": "8 in", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Mid Spring", "attracts": "Bees", "desc": "Vivid blue 'grape' clusters.", "tips": "Looks best in mass drifts down the slope.", "problems": "Invasive if not managed.", "nutrients": "None.", "benefits": "Stunning blue rivers."}, {"id": 38, "section": "flower_bed", "name": "Snowdrops", "botanical": "Galanthus", "wiki": "Galanthus", "size": "4-6 in", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Late Winter", "attracts": "Pollinators", "desc": "Nodding white bells. Blooms in snow.", "tips": "Plant under trees or at slope base.", "problems": "None.", "nutrients": "Leaf mold.", "benefits": "Hope after winter."}, {"id": 39, "section": "flower_bed", "name": "Carpathian Bellflower", "botanical": "Campanula carpatica", "wiki": "Campanula_carpatica", "size": "10 in", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Summer", "attracts": "Butterflies", "desc": "Blue/white upward facing bells.", "tips": "Forms neat mounds. Deadhead for rebloom.", "problems": "Slugs.", "nutrients": "Balanced liquid feed.", "benefits": "Continuous summer color."}, {"id": 40, "section": "flower_bed", "name": "Stonecrop (Sedum)", "botanical": "Sedum 'Autumn Joy'", "wiki": "Sedum", "size": "1.5 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Late Summer/Fall", "attracts": "Butterflies", "desc": "Fleshy leaves, broccoli-like flowers.", "tips": "Flower heads turn rust-red in winter.", "problems": "None.", "nutrients": "Grit / Sand.", "benefits": "Drought champion."}, {"id": 41, "section": "flower_bed", "name": "Rock Cress", "botanical": "Aubrieta", "wiki": "Aubrieta", "size": "4 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Early Spring", "attracts": "Butterflies", "desc": "Cascades dramatically over stone borders.", "tips": "Cut back by half after bloom to keep dense.", "problems": "None.", "nutrients": "Minimal.", "benefits": "Best for stone edges."}, {"id": 42, "section": "flower_bed", "name": "Bugleweed", "botanical": "Ajuga reptans", "wiki": "Ajuga_reptans", "size": "4-6 in", "water": "Moderate", "sun": "Shade/Part Sun", "maint": "Low", "bloom": "Spring", "attracts": "Bees", "desc": "Bronze foliage with blue flower spikes.", "tips": "Fills gaps quickly. Weed suppressor.", "problems": "Crown rot if too wet.", "nutrients": "Organic mulch.", "benefits": "Fancy foliage year-round."}, {"id": 43, "section": "flower_bed", "name": "Forget-Me-Not", "botanical": "Myosotis", "wiki": "Myosotis", "size": "1 ft", "water": "High", "sun": "Part Shade", "maint": "Low", "bloom": "Spring", "attracts": "Butterflies", "desc": "Clouds of tiny bright blue flowers.", "tips": "Self-seeds everywhere. Perfect companion for bulbs.", "problems": "Mildew in summer.", "nutrients": "None.", "benefits": "Romantic spring aesthetic."}, {"id": 44, "section": "flower_bed", "name": "Lily of the Valley", "botanical": "Convallaria majalis", "wiki": "Lily_of_the_valley", "size": "8 in", "water": "Moderate", "sun": "Shade", "maint": "Low", "bloom": "Spring", "attracts": "None", "desc": "Fragrant white bells. Toxic.", "tips": "Aggressive spreader. Great for slope stability.", "problems": "Can be invasive.", "nutrients": "Compost.", "benefits": "Heavenly scent."}, {"id": 45, "section": "flower_bed", "name": "Nasturtium", "botanical": "Tropaeolum majus", "wiki": "Tropaeolum", "size": "Trailing", "water": "Moderate", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Hummingbirds", "desc": "Vibrant edible flowers and round leaves.", "tips": "Avoid rich soil or you get only leaves, no flowers.", "problems": "Aphids.", "nutrients": "Poor soil is better.", "benefits": "Edible, colorful, trailing."}, {"id": 46, "section": "flower_bed", "name": "Candytuft", "botanical": "Iberis sempervirens", "wiki": "Iberis_sempervirens", "size": "8 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Spring", "attracts": "Butterflies", "desc": "Evergreen with brilliant white flower clusters.", "tips": "Looks like a snowdrift in spring.", "problems": "None serious.", "nutrients": "Grit.", "benefits": "Pure white contrast."}, {"id": 47, "section": "flower_bed", "name": "Basket-of-Gold", "botanical": "Aurinia saxatilis", "wiki": "Aurinia_saxatilis", "size": "10 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Spring", "attracts": "Bees", "desc": "Vibrant yellow flowers over gray foliage.", "tips": "Loves rocky slopes. Shear after blooming.", "problems": "Root rot.", "nutrients": "None.", "benefits": "Intense spring neon color."}, {"id": 48, "section": "flower_bed", "name": "Sea Thrift", "botanical": "Armeria maritima", "wiki": "Armeria_maritima", "size": "6-10 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Spring/Summer", "attracts": "Bees", "desc": "Grassy tufts with pink pom-pom flowers.", "tips": "Thrives in rocky, poor soil.", "problems": "Center die-out if too wet.", "nutrients": "None.", "benefits": "Unique ball-shaped flowers."}, {"id": 49, "section": "flower_bed", "name": "Blanket Flower", "botanical": "Gaillardia", "wiki": "Gaillardia", "size": "1.5 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer to Fall", "attracts": "Butterflies", "desc": "Sun-colored red and yellow petals.", "tips": "Extremely drought and heat tolerant.", "problems": "Short-lived perennial.", "nutrients": "None.", "benefits": "Continuous fire-like colors."}, {"id": 50, "section": "flower_bed", "name": "Speedwell", "botanical": "Veronica prostrata", "wiki": "Veronica_(plant)", "size": "6 in", "water": "Moderate", "sun": "Full Sun", "maint": "Low", "bloom": "Late Spring", "attracts": "Bees", "desc": "Deep blue flower spikes, mat forming.", "tips": "Great filler between stepping stones.", "problems": "Mildew.", "nutrients": "Balanced fertilizer.", "benefits": "True blue color."}, {"id": 51, "section": "flower_bed", "name": "Coral Bells", "botanical": "Heuchera", "wiki": "Heuchera", "size": "1 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Low", "bloom": "Summer", "attracts": "Hummingbirds", "desc": "Grown for lime, purple, or red leaves.", "tips": "Check for frost heaving in Baramulla winter.", "problems": "Root weevils.", "nutrients": "Leaf compost.", "benefits": "Year-round foliage color."}, {"id": 52, "section": "flower_bed", "name": "Lamb's Ear", "botanical": "Stachys byzantina", "wiki": "Stachys_byzantina", "size": "1 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Bees", "desc": "Soft, silvery-velvet leaves.", "tips": "Fuzzy texture is great for kids' interest.", "problems": "Rot in high humidity.", "nutrients": "None.", "benefits": "Tactile texture."}, {"id": 53, "section": "flower_bed", "name": "English Daisy", "botanical": "Bellis perennis", "wiki": "Bellis_perennis", "size": "6 in", "water": "Moderate", "sun": "Full/Part Sun", "maint": "Low", "bloom": "Spring/Autumn", "attracts": "Bees", "desc": "Tightly packed pink and white buttons.", "tips": "Prefers cool weather. Will rest in summer.", "problems": "Self-seeds aggressively.", "nutrients": "Balanced feed.", "benefits": "Cute, classic flower."}, {"id": 54, "section": "flower_bed", "name": "Baby's Breath (Creeping)", "botanical": "Gypsophila repens", "wiki": "Gypsophila", "size": "6 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Butterflies", "desc": "Clouds of tiny pink or white flowers.", "tips": "Needs alkaline soil. Great for slope.", "problems": "Stem rot.", "nutrients": "Garden lime.", "benefits": "Ethereal texture."}, {"id": 55, "section": "flower_bed", "name": "Catmint", "botanical": "Nepeta x faassenii", "wiki": "Nepeta", "size": "1.5 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Bees", "desc": "Lavender-blue spikes over grey leaves.", "tips": "Shear after first bloom for second flush.", "problems": "Cats may roll on it!", "nutrients": "None.", "benefits": "Longest blue bloom."}, {"id": 56, "section": "flower_bed", "name": "Iceland Poppy", "botanical": "Papaver nudicaule", "wiki": "Papaver_nudicaule", "size": "1 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Medium", "bloom": "Spring", "attracts": "Bees", "desc": "Papery crepe-like flowers in neon colors.", "tips": "Short-lived. Thrives in cold mountain air.", "problems": "Root rot.", "nutrients": "Compost.", "benefits": "Vibrant colors."}, {"id": 57, "section": "flower_bed", "name": "Blue Fescue", "botanical": "Festuca glauca", "wiki": "Festuca_glauca", "size": "10 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "None", "desc": "Spiky silver-blue ornamental grass.", "tips": "Comb out dead leaves in spring.", "problems": "Root rot.", "nutrients": "None.", "benefits": "Structural color accent."}, {"id": 58, "section": "flower_bed", "name": "Moss Rose", "botanical": "Portulaca grandiflora", "wiki": "Portulaca_grandiflora", "size": "6 in", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Summer", "attracts": "Bees", "desc": "Succulent annual, bright cactus-like flowers.", "tips": "Flowers close at night/on cloudy days.", "problems": "None.", "nutrients": "None.", "benefits": "Heat tolerant carpet."}, {"id": 59, "section": "flower_bed", "name": "Primrose", "botanical": "Primula vulgaris", "wiki": "Primula_vulgaris", "size": "6 in", "water": "High", "sun": "Shade", "maint": "Medium", "bloom": "Early Spring", "attracts": "Bees", "desc": "Early spring neon colors. Low rosettes.", "tips": "Needs rich, moist soil. Perfect for slope base.", "problems": "Slugs.", "nutrients": "Liquid feed in spring.", "benefits": "First post-snow colors."}, {"id": 60, "section": "flower_bed", "name": "Ranunculus", "botanical": "Ranunculus asiaticus", "wiki": "Ranunculus_asiaticus", "size": "1.5 ft", "water": "Moderate", "sun": "Full Sun", "maint": "High", "bloom": "Late Spring", "attracts": "Bees", "desc": "Exquisite multi-petaled rose-like flowers.", "tips": "Plant corms 'claws down'. Soak before planting.", "problems": "Root rot.", "nutrients": "Bulb fertilizer.", "benefits": "Best cut flower."}, {"id": 61, "section": "trees", "name": "Japanese Maple", "botanical": "Acer palmatum", "wiki": "Acer_palmatum", "size": "15-25 ft", "water": "Moderate", "sun": "Part Shade", "maint": "Medium", "bloom": "Spring Foliage", "attracts": "Birds", "desc": "Iconic delicate leaves, spectacular fall color.", "tips": "Shelter from strong winds. Prune in winter dormancy.", "problems": "Leaf scorch in hot sun.", "nutrients": "Slow release in spring.", "benefits": "High ornamental value. Lifecycle: Deciduous, can live 100+ years."}, {"id": 62, "section": "trees", "name": "Magnolia", "botanical": "Magnolia stellata", "wiki": "Magnolia", "size": "15-20 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Medium", "bloom": "Early Spring", "attracts": "Pollinators", "desc": "Large star-shaped white/pink flowers on bare branches.", "tips": "Fragile roots. Avoid digging around the base.", "problems": "Late frost kills buds.", "nutrients": "Acidic fertilizer.", "benefits": "Stunning spring feature. Lifecycle: Slow growing, lives 80+ years."}, {"id": 63, "section": "trees", "name": "Himalayan Birch", "botanical": "Betula utilis", "wiki": "Betula_utilis", "size": "30-40 ft", "water": "High", "sun": "Full Sun", "maint": "Low", "bloom": "Catkins in Spring", "attracts": "Birds", "desc": "Signature peeling white bark. Native to the region.", "tips": "Loves mountain air. Ensure consistent moisture.", "problems": "Aphids.", "nutrients": "Mulch base for moisture.", "benefits": "Year-round bark interest. Lifecycle: Medium life, fast growing."}, {"id": 64, "section": "trees", "name": "Apple Tree", "botanical": "Malus domestica", "wiki": "Apple", "size": "15-20 ft", "water": "Moderate", "sun": "Full Sun", "maint": "High", "bloom": "Spring (White/Pink)", "attracts": "Bees", "desc": "Fruit bearing, quintessential Kashmiri garden tree.", "tips": "Requires cross-pollination. Prune for fruit light access.", "problems": "Codling moth, scab.", "nutrients": "Fruit tree spikes.", "benefits": "Edible harvest. Lifecycle: Lives 30-50 productive years."}, {"id": 65, "section": "trees", "name": "Chinar (Oriental Plane)", "botanical": "Platanus orientalis", "wiki": "Platanus_orientalis", "size": "50+ ft", "water": "High", "sun": "Full Sun", "maint": "Low", "bloom": "Insignificant", "attracts": "Birds", "desc": "Majestic, historic, iconic Kashmiri tree.", "tips": "Only for large gardens. Heritage tree status.", "problems": "Anthracnose.", "nutrients": "Minimal.", "benefits": "Deep shade and history. Lifecycle: 200+ years."}, {"id": 66, "section": "trees", "name": "Cherry Blossom", "botanical": "Prunus serrulata", "wiki": "Prunus_serrulata", "size": "20-25 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Medium", "bloom": "Spring", "attracts": "Bees", "desc": "Clouds of pink/white double blooms.", "tips": "Short bloom period but spectacular. Susceptible to rot.", "problems": "Bacterial canker.", "nutrients": "Potash in spring.", "benefits": "The ultimate spring tree. Lifecycle: 20-30 years."}, {"id": 67, "section": "trees", "name": "Almond Tree", "botanical": "Prunus dulcis", "wiki": "Almond", "size": "15-20 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Medium", "bloom": "Very Early Spring", "attracts": "Bees", "desc": "First to bloom. Nut bearing.", "tips": "Sensitive to late frosts. Well drained soil.", "problems": "Birds eating nuts.", "nutrients": "Fertilize post-bloom.", "benefits": "Early color and nuts. Lifecycle: 25-50 years."}, {"id": 68, "section": "trees", "name": "Blue Spruce", "botanical": "Picea pungens", "wiki": "Blue_spruce", "size": "30-50 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Low", "bloom": "Evergreen", "attracts": "Birds", "desc": "Evergreen with sharp, silvery-blue needles.", "tips": "Provides excellent winter structure. Zero pruning needed.", "problems": "Needle cast.", "nutrients": "Holly-tone / Acidic.", "benefits": "Winter screen and color. Lifecycle: 100+ years."}, {"id": 69, "section": "trees", "name": "Walnut Tree", "botanical": "Juglans regia", "wiki": "Juglans_regia", "size": "40-60 ft", "water": "Moderate", "sun": "Full Sun", "maint": "Medium", "bloom": "Spring (Green)", "attracts": "Wildlife", "desc": "Nut bearing. Broad canopy.", "tips": "Produces juglone (inhibits other plants). Keep isolated.", "problems": "Walnut blight.", "nutrients": "Organic manure.", "benefits": "Valuable wood and nuts. Lifecycle: 100+ years."}, {"id": 70, "section": "trees", "name": "Deodar Cedar", "botanical": "Cedrus deodara", "wiki": "Cedrus_deodara", "size": "40-60 ft", "water": "Low", "sun": "Full Sun", "maint": "Low", "bloom": "Evergreen", "attracts": "Birds", "desc": "Graceful drooping branches. Native conifer.", "tips": "Drought tolerant once established. Regal appearance.", "problems": "None.", "nutrients": "Acidic mulch.", "benefits": "Magnificent silhouette. Lifecycle: 500+ years."}],
+                    activeSection: 'wall_pockets',
+                    search: '',
+                    selected: null
+                }
+            },
+            computed: {
+                filteredList() {
+                    const list = this.plants.filter(p => p.section === this.activeSection);
+                    if (!this.search) return list;
+                    const s = this.search.toLowerCase();
+                    return list.filter(p => p.name.toLowerCase().includes(s) || p.botanical.toLowerCase().includes(s));
+                }
+            },
+            mounted() {
+                this.plants.forEach(p => {
+                    p.loading = true;
+                    p.image = null;
+                    this.fetchImg(p);
+                });
+            },
+            methods: {
+                getPlaceholder(p) {
+                    return `https://placehold.co/800x600/e2ede6/2c4a3b?text=${encodeURIComponent(p.name)}`;
+                },
+                async fetchImg(p) {
+                    try {
+                        const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${p.wiki}`);
+                        const data = await res.json();
+                        if (data.thumbnail) {
+                            p.image = data.thumbnail.source.replace(/\d+px/, '800px');
+                        }
+                    } catch (e) { console.error(e); }
+                    finally { p.loading = false; }
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
