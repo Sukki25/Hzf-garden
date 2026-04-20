@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hzf | Garden Intelligence</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;600&family=Montserrat:wght@100;300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --obsidian: #0A0A0A;
+            --stone: #F2F2F2;
+            --gold: #C5A059;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--obsidian); color: var(--stone); overflow-x: hidden; }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
+        /* Modern Wordmark */
+        .hzf-logo { font-family: 'Cormorant Garamond', serif; letter-spacing: -2px; font-weight: 600; font-size: 2.5rem; color: var(--stone); display: flex; align-items: center; }
+        .hzf-logo span { color: var(--gold); margin-right: 2px; }
+
+        /* Glassmorphism & Cards */
+        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.5s ease; }
+        .glass-card:hover { border-color: var(--gold); background: rgba(255, 255, 255, 0.05); }
+        
+        .plant-image-container { position: relative; overflow: hidden; height: 400px; width: 100%; clip-path: inset(0 0 0 0); transition: clip-path 0.5s ease; }
+        .plant-card:hover .plant-image-container { clip-path: inset(10px 10px 10px 10px); }
+        .plant-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s scale; }
+        .plant-card:hover .plant-image { transform: scale(1.1); }
+
+        /* Dashboard Calendar Styling */
+        .calendar-node { border-left: 1px solid rgba(197, 160, 89, 0.3); padding-left: 20px; position: relative; }
+        .calendar-node::before { content: ''; position: absolute; left: -5px; top: 0; width: 9px; height: 9px; background: var(--gold); border-radius: 50%; }
+
+        /* Custom Scroll */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--obsidian); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="selection:bg-gold selection:text-obsidian">
+    <div id="app" v-cloak>
+        
+        <nav class="fixed top-0 w-full z-50 px-8 py-6 flex justify-between items-center bg-obsidian/80 backdrop-blur-md border-b border-white/10">
+            <div class="hzf-logo"><span>H</span>zf</div>
+            <div class="hidden md:flex space-x-12 text-[10px] uppercase tracking-[0.3em] font-light">
+                <a @click="activeTab = 'wall'" :class="activeTab === 'wall' ? 'text-gold' : 'hover:text-gold'" class="cursor-pointer transition-colors">Wall Pockets</a>
+                <a @click="activeTab = 'slope'" :class="activeTab === 'slope' ? 'text-gold' : 'hover:text-gold'" class="cursor-pointer transition-colors">Flower Bed</a>
+                <a @click="activeTab = 'trees'" :class="activeTab === 'trees' ? 'text-gold' : 'hover:text-gold'" class="cursor-pointer transition-colors">Trees</a>
+                <a @click="activeTab = 'dashboard'" :class="activeTab === 'dashboard' ? 'text-gold' : 'hover:text-gold'" class="cursor-pointer transition-colors">Intelligence</a>
+            </div>
+            <div class="text-[10px] text-gold border border-gold/30 px-4 py-2 uppercase tracking-widest">Baramulla 34°N</div>
+        </nav>
+
+        <header class="pt-40 pb-20 px-8 border-b border-white/5">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-gold uppercase tracking-[0.4em] text-[12px] mb-4">Botanical Engineering</h2>
+                <h1 class="text-6xl md:text-8xl font-serif mb-8">Garden Curation</h1>
+                <div class="flex flex-col md:flex-row justify-between items-end gap-8">
+                    <p class="max-w-xl text-stone/50 font-light leading-relaxed">
+                        An optimized architectural landscape framework specifically engineered for the micro-climate of Baramulla. High-performance perennials, moisture-mapped drainage, and cold-hardy structural integrity.
+                    </p>
+                    <div class="flex space-x-4">
+                        <input v-model="searchQuery" type="text" placeholder="Search Specimen..." class="bg-transparent border-b border-white/20 py-2 outline-none focus:border-gold transition-colors text-sm w-64 font-light">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="px-8 py-20">
+            <div class="max-w-7xl mx-auto">
+                
+                <div v-if="activeTab === 'dashboard'" class="animate-in fade-in duration-700">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                        <div class="lg:col-span-4 space-y-12">
+                            <section>
+                                <h3 class="text-gold text-xs uppercase tracking-widest mb-6 font-bold">Climate Parameters</h3>
+                                <div class="glass-card p-6 rounded-sm space-y-4">
+                                    <div class="flex justify-between border-b border-white/5 pb-2">
+                                        <span class="text-xs text-stone/40">Zone</span>
+                                        <span class="text-xs">Mountain Hardiness 7b</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-white/5 pb-2">
+                                        <span class="text-xs text-stone/40">Soil Requirement</span>
+                                        <span class="text-xs">Loamy / High-Drainage</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-xs text-stone/40">Critical Factor</span>
+                                        <span class="text-xs">Snow Load Management</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h3 class="text-gold text-xs uppercase tracking-widest mb-6 font-bold">The Hzf Guidelines</h3>
+                                <ul class="space-y-6">
+                                    <li v-for="tip in generalTips" class="text-sm font-light leading-relaxed border-l border-gold/20 pl-4">
+                                        <strong class="text-gold block mb-1 text-[10px] uppercase tracking-tighter">{{ tip.title }}</strong>
+                                        {{ tip.content }}
+                                    </li>
+                                </ul>
+                            </section>
+                        </div>
+
+                        <div class="lg:col-span-8 bg-white/5 p-10 border border-white/10 rounded-sm">
+                            <div class="flex justify-between items-center mb-12">
+                                <h3 class="text-3xl font-serif">Maintenance Matrix</h3>
+                                <div class="text-[10px] text-stone/30 uppercase tracking-[0.2em]">Active Calendar 2026</div>
+                            </div>
+
+                            <div class="space-y-12">
+                                <div v-for="(tasks, period) in maintenance" :key="period" class="calendar-node">
+                                    <h4 class="text-gold uppercase tracking-[0.2em] text-[11px] font-bold mb-4">{{ period }} Protocol</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div v-for="task in tasks" class="flex items-center space-x-3 group">
+                                            <div class="w-2 h-2 border border-gold/50 group-hover:bg-gold transition-all"></div>
+                                            <span class="text-sm text-stone/70 font-light">{{ task }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1px bg-white/10">
+                    <div v-for="plant in filteredPlants" :key="plant.name" @click="openModal(plant)" 
+                         class="plant-card bg-obsidian group cursor-pointer relative overflow-hidden p-6 hover:bg-zinc-900/50 transition-all duration-500">
+                        
+                        <div class="plant-image-container mb-6">
+                            <img :src="plant.image" class="plant-image" loading="lazy">
+                            <div class="absolute inset-0 bg-obsidian/20 group-hover:bg-transparent transition-colors"></div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-2xl font-serif">{{ plant.name }}</h3>
+                                <span class="text-[10px] text-gold uppercase tracking-widest border border-gold/20 px-2 py-1">{{ plant.bloom_season }}</span>
+                            </div>
+                            <p class="text-[10px] text-stone/40 uppercase tracking-widest italic">{{ plant.botanical }}</p>
+                            <p class="text-sm text-stone/60 font-light line-clamp-2 leading-relaxed">
+                                {{ plant.description }}
+                            </p>
+                            <div class="pt-4 flex justify-between items-center border-t border-white/5">
+                                <span class="text-[9px] uppercase tracking-[0.2em] text-stone/40">Specimen No. {{ plant.id }}</span>
+                                <span class="text-gold text-xs group-hover:translate-x-2 transition-transform">DETAILS →</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <transition name="fade">
+            <div v-if="selectedPlant" class="fixed inset-0 z-[100] bg-obsidian flex items-center justify-center p-0 md:p-12 overflow-y-auto">
+                <div class="w-full h-full bg-obsidian border border-white/10 relative flex flex-col md:flex-row overflow-y-auto custom-scrollbar">
+                    
+                    <button @click="closeModal" class="absolute top-8 right-8 z-[110] text-gold text-3xl font-light hover:rotate-90 transition-transform">&times;</button>
+
+                    <div class="w-full md:w-1/2 h-[50vh] md:h-full">
+                        <img :src="selectedPlant.image" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000">
+                    </div>
+
+                    <div class="w-full md:w-1/2 p-12 md:p-24 space-y-12">
+                        <div>
+                            <h4 class="text-gold text-xs uppercase tracking-[0.5em] mb-4">Technical Specifications</h4>
+                            <h2 class="text-6xl font-serif mb-4">{{ selectedPlant.name }}</h2>
+                            <p class="text-xl text-stone/40 italic font-light">{{ selectedPlant.botanical }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-8 text-xs uppercase tracking-widest">
+                            <div class="border-b border-white/10 pb-4">
+                                <span class="text-stone/30 block mb-2">Cycle</span>
+                                <span>{{ selectedPlant.bloom_duration }}</span>
+                            </div>
+                            <div class="border-b border-white/10 pb-4">
+                                <span class="text-stone/30 block mb-2">Nutrients</span>
+                                <span>{{ selectedPlant.nutrients }}</span>
+                            </div>
+                            <div class="border-b border-white/10 pb-4">
+                                <span class="text-stone/30 block mb-2">Hardiness</span>
+                                <span>High (Sub-Zero)</span>
+                            </div>
+                            <div class="border-b border-white/10 pb-4">
+                                <span class="text-stone/30 block mb-2">Exposure</span>
+                                <span>{{ selectedPlant.sun }}</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <h5 class="text-gold uppercase tracking-[0.3em] text-[10px] font-bold">Cultivation Strategy</h5>
+                            <p class="text-stone/70 font-light leading-loose text-lg">
+                                {{ selectedPlant.care_instructions }}
+                            </p>
+                        </div>
+
+                        <div class="bg-gold/5 p-8 border-l-2 border-gold space-y-4">
+                            <h5 class="text-gold uppercase tracking-widest text-[10px]">Pathology & Benefits</h5>
+                            <p class="text-sm font-light text-stone/60"><strong>Risks:</strong> {{ selectedPlant.problems }}</p>
+                            <p class="text-sm font-light text-stone/60"><strong>Primary Benefit:</strong> {{ selectedPlant.benefits }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    activeTab: 'wall',
+                    searchQuery: '',
+                    selectedPlant: null,
+                    generalTips: [
+                        { title: "The Chill Requirement", content: "Baramulla provides the essential 800-1000 chill hours required by our premium specimens to break dormancy effectively." },
+                        { title: "Snow Management", content: "Evergreen trees must be pruned to an 'Open Center' to prevent heavy snowfall from snapping central leaders." },
+                        { title: "Hydraulic Drainage", content: "Our slope beds utilize a 3-layer aggregate system to ensure zero water-logging during the monsoon-to-snow transition." },
+                        { title: "Thermal Mulching", content: "By mid-November, all wall pockets require a 4-inch cocoa-husk or straw layer to insulate root systems." }
+                    ],
+                    maintenance: {
+                        Weekly: ["Hydration Assessment", "Deadhead Spent Blooms", "Pest Perimeter Sweep", "Soil Ph Spot Check"],
+                        Monthly: ["Deep Nutrient Feed", "Structural Pruning", "Aggregate Aeration", "Mulch Integrity Check"],
+                        Quarterly: ["Seasonal Specimen Rotation", "Dormancy Prep", "Hardscape Inspection", "Bulb Deployment"],
+                        Yearly: ["Soil Vitality Recharge", "Tree Canopy Thinning", "Irrigation Re-Calibration", "Expansion Planning"]
+                    },
+                    plants: [] // To be populated
+                }
+            },
+            computed: {
+                filteredPlants() {
+                    let result = this.plants.filter(p => p.section === this.activeTab);
+                    if (this.searchQuery) {
+                        result = result.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                    }
+                    return result;
+                }
+            },
+            methods: {
+                openModal(plant) { this.selectedPlant = plant; },
+                closeModal() { this.selectedPlant = null; },
+                generateData() {
+                    const wallPlants = [
+                        "Hydrangea", "English Rose", "Delphinium", "Coneflower", "Astilbe", "Peony", "Hosta", "Bleeding Heart", "Clematis", "Coral Bells",
+                        "Foxglove", "Siberian Iris", "Lupine", "Creeping Jenny", "Japanese Anemone", "Monkshood", "Ligularia", "Bergenia", "Hollyhock", "Maidenhair Fern",
+                        "English Ivy", "Yarrow", "Daylily", "Russian Sage", "Catmint", "Columbine", "Blanket Flower", "Bellflower", "Candytuft", "Sea Thrift"
+                    ];
+                    const slopePlants = [
+                        "Creeping Phlox", "Sweet Alyssum", "Lavender", "Saffron Crocus", "Daffodil", "Grape Hyacinth", "Lily of the Valley", "Lobelia", "Stonecrop", "Rock Cress",
+                        "Pansy", "Dianthus", "Calendula", "Ajuga", "Snowdrops", "Geranium", "Nasturtium", "Forget-Me-Not", "Dwarf Tulip", "Carpathian Bellflower",
+                        "Allium", "Black-Eyed Susan", "Alpine Aster", "Creeping Thyme", "Tickseed", "Geum", "Hens and Chicks", "Salvia", "Moss Phlox", "Blue Fescue"
+                    ];
+                    const trees = ["Japanese Maple", "Chinar", "Kashmir Walnut", "Deodar Cedar", "Weeping Willow", "Flowering Cherry", "Silver Birch", "Apple Tree", "Pear Tree", "Blue Spruce"];
+
+                    const factory = (name, section, id) => ({
+                        id,
+                        name,
+                        section,
+                        botanical: "Specimen " + name + " var. Baramulla",
+                        description: `A highly robust architectural ${section} specimen, selected for its visual impact and resistance to mountain frost cycles.`,
+                        sun: section === 'wall' ? 'Part Shade' : 'Full Sun',
+                        bloom_season: "Spring/Summer",
+                        bloom_duration: "8-12 Weeks",
+                        nutrients: "Phosphorus Rich",
+                        problems: "Mildew in High Humidity",
+                        benefits: "Soil Stabilization & Aesthetic Gravity",
+                        care_instructions: `During the growing season in Baramulla, ensure this specimen receives deep hydration every 4 days. In winter, mulch the base heavily with organic pine needles.`,
+                        image: `https://source.unsplash.com/featured/?${name.replace(/ /g, ',')},botanical`
+                    });
+
+                    let id = 100;
+                    wallPlants.forEach(n => this.plants.push(factory(n, 'wall', id++)));
+                    slopePlants.forEach(n => this.plants.push(factory(n, 'slope', id++)));
+                    trees.forEach(n => this.plants.push(factory(n, 'trees', id++)));
+                }
+            },
+            created() {
+                this.generateData();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
